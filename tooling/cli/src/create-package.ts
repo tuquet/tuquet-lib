@@ -196,11 +196,10 @@ export async function runCreatePackage(): Promise<void> {
   const tsconfigJson = {
     extends: '@tuquet/tsconfig/library.json',
     compilerOptions: {
-      rootDir: './src',
-      outDir: './dist',
+      noEmit: true,
     },
-    include: ['src/**/*'],
-    exclude: ['node_modules', 'dist', 'tests'],
+    include: ['src/**/*', 'tests/**/*'],
+    exclude: ['node_modules', 'dist'],
   };
   fs.writeFileSync(
     path.join(targetDir, 'tsconfig.json'),

@@ -19,13 +19,14 @@ export async function retry<T>(
   options: RetryOptions = {}
 ): Promise<T> {
   const { maxRetries = 3, delayMs = 100, backoffFactor = 2 } = options;
+  const totalAttempts = Math.max(1, maxRetries);
   let currentDelay = delayMs;
 
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+  for (let attempt = 1; attempt <= totalAttempts; attempt++) {
     try {
       return await fn(attempt);
     } catch (error) {
-      if (attempt === maxRetries) {
+      if (attempt === totalAttempts) {
         throw error;
       }
       await sleep(currentDelay);

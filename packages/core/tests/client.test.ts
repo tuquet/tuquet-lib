@@ -23,4 +23,26 @@ describe('TuquetClient', () => {
     expect(result.metadata.processedBy).toBe('auth-middleware');
     expect(typeof result.timestamp).toBe('number');
   });
+
+  it('isolates context and does not pollute state across retries', async () => {
+    const client = new TuquetClient({ appName: 'Retry App', maxRetries: 3 });
+    let attempts = 0;
+
+    client.use(async (ctx, next) => {
+      attempts++;
+      ctx.payload.count = ((ctx.payload.count as number) || 0) + 1;
+      if (attempts < 2) {
+        throw new Error('Temporary failure on attempt 1');
+      }
+      await next();
+    });
+
+    const initialPayload = { count: 0 };
+    const result = await client.dispatch('retry:action', initialPayload);
+
+    // Context is fresh on attempt 2, so count is 1 (0 + 1), not 2
+    expect(result.payload.count).toBe(1);
+    // Initial payload passed by caller is not mutated
+    expect(initialPayload.count).toBe(0);
+  });
 });

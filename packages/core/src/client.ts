@@ -45,17 +45,17 @@ export class TuquetClient {
    * Dispatch an action through the middleware pipeline with timeout and retry protection.
    */
   async dispatch(action: string, payload: Record<string, unknown> = {}): Promise<ExecutionContext> {
-    const context: ExecutionContext = {
-      action,
-      payload,
-      timestamp: Date.now(),
-      metadata: {
-        appSlug: this.appSlug,
-      },
-    };
-
     return retry(
       async () => {
+        const context: ExecutionContext = {
+          action,
+          payload: { ...payload },
+          timestamp: Date.now(),
+          metadata: {
+            appSlug: this.appSlug,
+          },
+        };
+
         return withTimeout(
           this.pipeline.execute(context),
           this.options.timeoutMs,

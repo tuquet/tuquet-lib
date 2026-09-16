@@ -18,6 +18,7 @@ export class Pipeline<T> {
    * Executes the pipeline against the provided context.
    */
   async execute(context: T): Promise<T> {
+    const middlewares = [...this.middlewares];
     let index = -1;
 
     const dispatch = async (i: number): Promise<void> => {
@@ -26,7 +27,7 @@ export class Pipeline<T> {
       }
       index = i;
 
-      const fn = this.middlewares[i];
+      const fn = middlewares[i];
       if (!fn) return;
 
       await fn(context, () => dispatch(i + 1));

@@ -11,30 +11,32 @@ export function capitalize(str: string): string {
  */
 export function truncate(str: string, maxLength: number, suffix = '...'): string {
   if (!str || str.length <= maxLength) return str;
+  if (maxLength <= suffix.length) return str.slice(0, maxLength);
   return str.slice(0, maxLength - suffix.length) + suffix;
 }
 
 /**
- * Converts a string into a URL-friendly slug.
+ * Converts a string into a URL-friendly slug with Unicode normalization.
  */
 export function slugify(text: string): string {
+  if (!text) return '';
   return text
-    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .trim()
-    .replace(/\s+/g, '-')
-    .replace(/[^\w-]+/g, '')
-    .replace(/--+/g, '-');
+    .replace(/[^\w\s-]+/g, ' ')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 /**
  * Converts a string to camelCase.
  */
 export function camelCase(str: string): string {
+  if (!str) return '';
   return str
-    .replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) =>
-      index === 0 ? word.toLowerCase() : word.toUpperCase()
-    )
-    .replace(/\s+/g, '')
-    .replace(/[-_]+/g, '');
+    .trim()
+    .replace(/[-_\s]+(.)?/g, (_, c) => (c ? c.toUpperCase() : ''))
+    .replace(/^(.)/, (c) => c.toLowerCase());
 }

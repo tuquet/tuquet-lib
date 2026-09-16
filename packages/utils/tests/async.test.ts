@@ -22,6 +22,11 @@ describe('async utils', () => {
       expect(attempts).toBe(1);
     });
 
+    it('executes at least once even if maxRetries is 0', async () => {
+      const result = await retry(async () => 'ok', { maxRetries: 0 });
+      expect(result).toBe('ok');
+    });
+
     it('retries until success', async () => {
       let attempts = 0;
       const result = await retry(
