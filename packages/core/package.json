@@ -25,6 +25,26 @@
     "node": ">=18.0.0"
   },
   "sideEffects": false,
+  "license": "MIT",
+  "author": "Tuquet <dev@tuquet.io>",
+  "homepage": "https://github.com/tuquet/tuquet-lib/tree/main/packages/core#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tuquet/tuquet-lib.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/tuquet/tuquet-lib/issues"
+  },
+  "keywords": [
+    "tuquet",
+    "core",
+    "client",
+    "pipeline",
+    "middleware",
+    "resilience",
+    "retry"
+  ],
   "publishConfig": {
     "access": "public"
   },

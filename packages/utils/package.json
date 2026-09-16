@@ -25,6 +25,28 @@
     "node": ">=18.0.0"
   },
   "sideEffects": false,
+  "license": "MIT",
+  "author": "Tuquet <dev@tuquet.io>",
+  "homepage": "https://github.com/tuquet/tuquet-lib/tree/main/packages/utils#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tuquet/tuquet-lib.git",
+    "directory": "packages/utils"
+  },
+  "bugs": {
+    "url": "https://github.com/tuquet/tuquet-lib/issues"
+  },
+  "keywords": [
+    "tuquet",
+    "utils",
+    "helpers",
+    "async",
+    "string",
+    "retry",
+    "sleep",
+    "timeout",
+    "slugify"
+  ],
   "publishConfig": {
     "access": "public"
   },

@@ -4,6 +4,12 @@
   "private": true,
   "description": "Monorepo for @tuquet Node.js libraries",
   "packageManager": "pnpm@9.15.9",
+  "license": "MIT",
+  "author": "Tuquet <dev@tuquet.io>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tuquet/tuquet-lib.git"
+  },
   "type": "module",
   "scripts": {
     "build": "turbo run build",
@@ -19,12 +25,24 @@
     "clean": "turbo run clean && rm -rf node_modules",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "release": "turbo run build && changeset publish"
+    "release": "turbo run build && changeset publish",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.12",
     "@types/node": "^22.20.3",
     "eslint": "^9.21.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.5.1",
     "prettier": "^3.5.3",
     "tsx": "^4.19.3",
     "turbo": "^2.4.4",
