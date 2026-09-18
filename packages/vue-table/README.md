@@ -91,10 +91,39 @@ const remote = useRemoteTable<User>({
 | :----------------------------- | :------------------------------------------------------------------------------------------------------------------------ |
 | **`<DataTable>`**              | Container component orchestrating toolbar, header, body with loading skeletons, empty state, error retry, and pagination. |
 | **`<DataTableToolbar>`**       | Search input, dynamic faceted filter triggers, reset button, and custom action slots (`#actions`).                        |
+| **`<DataTableFloatingBar>`**   | Floating bulk action bar animated at bottom with selection count badge, `#actions` slot, and `Clear` (Esc) trigger.       |
 | **`<DataTablePagination>`**    | Page navigation (first, prev, next, last), rows per page selector (10/20/50/100), selection summary.                      |
 | **`<DataTableColumnHeader>`**  | Sortable column header button with Asc / Desc / Clear icons and hide column menu.                                         |
 | **`<DataTableFacetedFilter>`** | Multi-select category popover with command search, item checkboxes, and count badges.                                     |
 | **`<DataTableViewOptions>`**   | Dropdown menu to toggle column visibility.                                                                                |
+
+## 🔘 Row Selection & Bulk Actions
+
+Easily add row selection with `createSelectionColumn()` and bulk action toolbar:
+
+```ts
+import { createSelectionColumn, type ColumnDef } from '@tuquet/vue-table';
+
+const columns: ColumnDef<User>[] = [
+  createSelectionColumn<User>({
+    isRowSelectable: (row) => row.original.status !== 'suspended', // optional guard
+  }),
+  { accessorKey: 'name', header: 'Name' },
+  // ...
+];
+```
+
+In your template, pass bulk action buttons into the `#bulk-actions` slot:
+
+```vue
+<DataTable :remote="remote">
+  <template #bulk-actions="{ selectedRows, selectedCount }">
+    <Button variant="destructive" size="sm" @click="handleBulkDelete(selectedRows)">
+      Delete ({{ selectedCount }})
+    </Button>
+  </template>
+</DataTable>
+```
 
 ## 🔌 Query Adapters
 

@@ -4,3 +4,4 @@ export { default as DataTablePagination } from './DataTablePagination.vue';
 export { default as DataTableColumnHeader } from './DataTableColumnHeader.vue';
 export { default as DataTableFacetedFilter } from './DataTableFacetedFilter.vue';
 export { default as DataTableViewOptions } from './DataTableViewOptions.vue';
+export { default as DataTableFloatingBar } from './DataTableFloatingBar.vue';

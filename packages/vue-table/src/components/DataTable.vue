@@ -14,6 +14,7 @@ import {
 import { AlertCircle, RefreshCw } from 'lucide-vue-next';
 import { computed } from 'vue';
 import type { UseRemoteTableReturn } from '../composables/useRemoteTable.js';
+import DataTableFloatingBar from './DataTableFloatingBar.vue';
 import DataTablePagination from './DataTablePagination.vue';
 import DataTableToolbar from './DataTableToolbar.vue';
 
@@ -21,6 +22,7 @@ interface DataTableProps<TData> {
   remote: UseRemoteTableReturn<TData>;
   showToolbar?: boolean;
   showPagination?: boolean;
+  showFloatingBar?: boolean;
   emptyMessage?: string;
   skeletonRows?: number;
 }
@@ -28,6 +30,7 @@ interface DataTableProps<TData> {
 const props = withDefaults(defineProps<DataTableProps<any>>(), {
   showToolbar: true,
   showPagination: true,
+  showFloatingBar: true,
   emptyMessage: 'No results found.',
   skeletonRows: 5,
 });
@@ -156,6 +159,24 @@ const columnCount = computed(() => table.value.getAllColumns().length);
         :table="table"
         :total="remote.total.value"
       />
+    </slot>
+
+    <!-- Floating Bulk Actions Bar -->
+    <slot
+      name="floating-bar"
+      :table="table"
+      :selected-rows="table.getFilteredSelectedRowModel().rows"
+      :selected-count="table.getFilteredSelectedRowModel().rows.length"
+    >
+      <DataTableFloatingBar
+        v-if="showFloatingBar"
+        :table="table"
+        :total-count="remote.total.value"
+      >
+        <template #actions="slotProps">
+          <slot name="bulk-actions" v-bind="slotProps" />
+        </template>
+      </DataTableFloatingBar>
     </slot>
   </div>
 </template>
