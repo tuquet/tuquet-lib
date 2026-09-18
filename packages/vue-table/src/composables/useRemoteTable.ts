@@ -28,11 +28,14 @@ import type {
   SortingState,
   TableState,
 } from '../types/index.js';
+import { useTableFilters } from './useTableFilters.js';
+import { useTableMutations, type RowPredicate, type RowUpdater } from './useTableMutations.js';
+import { useTablePagination } from './useTablePagination.js';
+import { useTableSelection } from './useTableSelection.js';
+import { useTableSorting } from './useTableSorting.js';
 import { useUrlSync } from './useUrlSync.js';
 
-export type RowPredicate<TData> = string | number | ((item: TData, index: number) => boolean);
-
-export type RowUpdater<TData> = Partial<TData> | ((item: TData, index: number) => TData);
+export { type RowPredicate, type RowUpdater };
 
 export interface UseRemoteTableOptions<TData, TValue = unknown> {
   columns: ColumnDef<TData, TValue>[];
@@ -97,25 +100,52 @@ export function useRemoteTable<TData, TValue = unknown>(
   } = options;
 
   const data = ref<TData[]>([]) as Ref<TData[]>;
-  const total = ref(0);
   const isLoading = ref(true);
   const isFetching = ref(false);
   const isError = ref(false);
   const error = ref<Error | null>(null);
 
-  // Table State
-  const pagination = ref<PaginationState>({
-    pageIndex: initialState.pagination?.pageIndex ?? 0,
-    pageSize: initialState.pagination?.pageSize ?? defaultPageSize,
+  // 1. Pagination Composable
+  const { pagination, total, pageCount } = useTablePagination({
+    initialPageIndex: initialState.pagination?.pageIndex ?? 0,
+    initialPageSize: initialState.pagination?.pageSize ?? defaultPageSize,
+    initialTotal: 0,
   });
-  const sorting = ref<SortingState>(initialState.sorting ?? []);
-  const columnFilters = ref<Record<string, unknown>>(initialState.filters ?? {});
-  const searchQuery = ref<string>(initialState.search ?? '');
+
+  // 2. Sorting Composable
+  const { sorting } = useTableSorting({
+    initialSorting: initialState.sorting ?? [],
+  });
+
+  // 3. Filters Composable
+  const {
+    filters: columnFilters,
+    searchQuery,
+    activeFilterCount,
+    setFilter,
+    resetFilters,
+  } = useTableFilters({
+    initialFilters: initialState.filters ?? {},
+    initialSearch: initialState.search ?? '',
+    filterDefs,
+  });
+
+  // 4. Selection Composable
+  const { rowSelection, selectedRowIds } = useTableSelection<TData>({
+    initialSelection: {},
+  });
+
+  // 5. Column Visibility & Pinning
   const columnVisibility = ref<Record<string, boolean>>(initialState.columnVisibility ?? {});
   const columnPinning = ref<ColumnPinningState>(
     initialState.columnPinning ?? options.columnPinning ?? { left: [], right: [] }
   );
-  const rowSelection = ref<Record<string, boolean>>({});
+
+  // 6. Optimistic CRUD Mutations Composable
+  const { mutateRow, deleteRow, prependRow, appendRow, setData } = useTableMutations<TData>({
+    data,
+    total,
+  });
 
   // URL Synchronization
   const urlSync = useUrlSync({
@@ -137,22 +167,6 @@ export function useRemoteTable<TData, TValue = unknown>(
     if (urlState.filters) columnFilters.value = urlState.filters;
     if (urlState.search !== undefined) searchQuery.value = urlState.search;
   }
-
-  const pageCount = computed(() => {
-    return Math.max(1, Math.ceil(total.value / pagination.value.pageSize));
-  });
-
-  const activeFilterCount = computed(() => {
-    let count = 0;
-    if (searchQuery.value && searchQuery.value.trim().length > 0) count += 1;
-    for (const val of Object.values(columnFilters.value)) {
-      if (val !== undefined && val !== null && val !== '') {
-        if (Array.isArray(val) && val.length === 0) continue;
-        count += 1;
-      }
-    }
-    return count;
-  });
 
   let activeController: AbortController | null = null;
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -311,88 +325,16 @@ export function useRemoteTable<TData, TValue = unknown>(
     { deep: true }
   );
 
-  const setFilter = (id: string, value: unknown) => {
-    columnFilters.value = {
-      ...columnFilters.value,
-      [id]: value,
-    };
-  };
-
-  const resetFilters = () => {
-    searchQuery.value = '';
-    columnFilters.value = {};
-  };
-
   const refetch = async () => {
     await executeFetch();
   };
 
   const invalidate = refetch;
 
-  // Selection shortcuts
-  const selectedRows = computed(() => table.getFilteredSelectedRowModel().rows);
-  const selectedRowIds = computed(() =>
-    Object.keys(rowSelection.value).filter((key) => rowSelection.value[key])
-  );
+  // Selection shortcuts derived from Table instance
+  const selectedRows = computed<Row<TData>[]>(() => table.getFilteredSelectedRowModel().rows);
   const selectedCount = computed(() => selectedRows.value.length);
   const clearSelection = () => table.resetRowSelection();
-
-  // Helper to match row
-  const matchRow = (item: TData, index: number, predicate: RowPredicate<TData>): boolean => {
-    if (typeof predicate === 'function') {
-      return predicate(item, index);
-    }
-    const candidate = item as Record<string, unknown>;
-    return candidate?.id === predicate || candidate?._id === predicate;
-  };
-
-  // Optimistic CRUD mutations
-  const mutateRow = (predicateOrId: RowPredicate<TData>, updater: RowUpdater<TData>) => {
-    data.value = data.value.map((item, idx) => {
-      if (!matchRow(item, idx, predicateOrId)) {
-        return item;
-      }
-      if (typeof updater === 'function') {
-        return updater(item, idx);
-      }
-      return { ...item, ...updater };
-    });
-  };
-
-  const deleteRow = (predicateOrId: RowPredicate<TData> | (string | number)[]) => {
-    const initialLength = data.value.length;
-    if (Array.isArray(predicateOrId)) {
-      const idSet = new Set(predicateOrId);
-      data.value = data.value.filter((item) => {
-        const candidate = item as Record<string, unknown>;
-        const id = candidate?.id ?? candidate?._id;
-        return !idSet.has(id as string | number);
-      });
-    } else {
-      data.value = data.value.filter((item, idx) => !matchRow(item, idx, predicateOrId));
-    }
-    const deletedCount = initialLength - data.value.length;
-    if (deletedCount > 0) {
-      total.value = Math.max(0, total.value - deletedCount);
-    }
-  };
-
-  const prependRow = (newRow: TData) => {
-    data.value = [newRow, ...data.value];
-    total.value += 1;
-  };
-
-  const appendRow = (newRow: TData) => {
-    data.value = [...data.value, newRow];
-    total.value += 1;
-  };
-
-  const setData = (updaterOrValue: TData[] | ((prev: TData[]) => TData[]), newTotal?: number) => {
-    data.value = typeof updaterOrValue === 'function' ? updaterOrValue(data.value) : updaterOrValue;
-    if (typeof newTotal === 'number') {
-      total.value = newTotal;
-    }
-  };
 
   const setColumnPinning = (pinning: ColumnPinningState) => {
     columnPinning.value = pinning;
