@@ -1,0 +1,56 @@
+{
+  "name": "@tuquet/vue-table",
+  "version": "0.1.0",
+  "description": "Remote-driven Data Table system for Vue 3 powered by TanStack Table and Shadcn-Vue (@tuquet/ui)",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "vite build && cp dist/index.d.ts dist/index.d.cts",
+    "typecheck": "vue-tsc --noEmit",
+    "test": "vitest run",
+    "check:exports": "publint"
+  },
+  "dependencies": {
+    "@tanstack/vue-table": "^8.21.3",
+    "@tuquet/ui": "workspace:*",
+    "@vueuse/core": "^15.0.0",
+    "lucide-vue-next": "^1.0.0"
+  },
+  "peerDependencies": {
+    "vue": "^3.4.0 || ^3.5.0"
+  },
+  "devDependencies": {
+    "@tuquet/tsconfig": "workspace:*",
+    "@types/node": "^22.13.9",
+    "@vitejs/plugin-vue": "^5.2.4",
+    "publint": "^0.3.24",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.0",
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^3.0.8",
+    "vue": "^3.5.13",
+    "vue-tsc": "^2.2.8"
+  }
+}

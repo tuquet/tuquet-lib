@@ -1,0 +1,60 @@
+export interface PaginationState {
+  pageIndex: number;
+  pageSize: number;
+}
+
+export interface ColumnSort {
+  id: string;
+  desc: boolean;
+}
+
+export type SortingState = ColumnSort[];
+
+export type FilterOperator =
+  | 'eq'
+  | 'ne'
+  | 'contains'
+  | 'startsWith'
+  | 'endsWith'
+  | 'in'
+  | 'notIn'
+  | 'between'
+  | 'gt'
+  | 'gte'
+  | 'lt'
+  | 'lte';
+
+export interface ColumnFilterValue<T = unknown> {
+  id: string;
+  operator: FilterOperator;
+  value: T;
+}
+
+export type FiltersState = Record<string, unknown>;
+
+export interface TableState {
+  pagination: PaginationState;
+  sorting: SortingState;
+  filters: FiltersState;
+  search?: string;
+  columnVisibility?: Record<string, boolean>;
+}
+
+export interface FetchParams {
+  page: number;
+  limit: number;
+  offset: number;
+  sort?: string;
+  search?: string;
+  filters: Record<string, unknown>;
+  signal: AbortSignal;
+  queryParams: Record<string, unknown>;
+  toQueryString: () => string;
+}
+
+export interface FetchResult<TData> {
+  data: TData[];
+  total: number;
+  pageCount?: number;
+  facets?: Record<string, Record<string, number>>;
+}
