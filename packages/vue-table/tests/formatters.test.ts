@@ -1,6 +1,8 @@
+import type { Row } from '@tanstack/vue-table';
 import { describe, expect, it } from 'vitest';
 import {
   createActionsColumn,
+  createAvatarColumn,
   createBadgeColumn,
   createCopyableColumn,
   createCurrencyColumn,
@@ -139,6 +141,59 @@ describe('Column Formatters', () => {
         expect(vnode).toBeDefined();
         expect(vnode.props.value).toBe('sk_test_1234567890abcdef');
         expect(vnode.props.truncateLength).toBe(10);
+      }
+    });
+  });
+
+  describe('createAvatarColumn', () => {
+    interface UserRow {
+      name: string;
+      email?: string;
+      avatarUrl?: string;
+    }
+
+    it('creates avatar column with proper id, header, and sorting', () => {
+      const col = createAvatarColumn<UserRow>({
+        nameKey: 'name',
+        descriptionKey: 'email',
+        srcKey: 'avatarUrl',
+        header: 'User',
+      });
+
+      expect(col.id).toBe('name');
+      expect(col.header).toBe('User');
+      expect(col.enableSorting).toBe(true);
+
+      if (typeof col.cell === 'function') {
+        const row = {
+          original: {
+            name: 'John Doe',
+            email: 'john@example.com',
+            avatarUrl: 'https://example.com/avatar.jpg',
+          },
+        } as unknown as Row<UserRow>;
+
+        const vnode = col.cell({ row } as any) as any;
+        expect(vnode).toBeDefined();
+        expect(vnode.children).toHaveLength(2); // avatar + text column
+      }
+    });
+
+    it('handles single-word names and empty description', () => {
+      const col = createAvatarColumn<UserRow>({
+        nameKey: 'name',
+        header: 'Name',
+      });
+
+      if (typeof col.cell === 'function') {
+        const row = {
+          original: {
+            name: 'Alice',
+          },
+        } as unknown as Row<UserRow>;
+
+        const vnode = col.cell({ row } as any) as any;
+        expect(vnode).toBeDefined();
       }
     });
   });

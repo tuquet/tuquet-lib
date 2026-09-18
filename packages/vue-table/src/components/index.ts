@@ -37,3 +37,14 @@ export {
   type DateRangePreset,
   type DataTableDateRangeFilterProps,
 } from './DataTableDateRangeFilter.vue';
+export {
+  default as DataTableNumberRangeFilter,
+  type NumberRangeValue,
+  type DataTableNumberRangeFilterProps,
+} from './DataTableNumberRangeFilter.vue';
+export {
+  default as DataTableTextFilter,
+  type TextFilterOperator,
+  type TextFilterValue,
+  type DataTableTextFilterProps,
+} from './DataTableTextFilter.vue';

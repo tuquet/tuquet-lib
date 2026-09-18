@@ -4,7 +4,13 @@ import { Button, Input } from '@tuquet/vue-ui';
 import { X } from 'lucide-vue-next';
 import { computed } from 'vue';
 import type { FilterDef } from '../types/index.js';
+import DataTableDateRangeFilter, { type DateRangeValue } from './DataTableDateRangeFilter.vue';
 import DataTableFacetedFilter from './DataTableFacetedFilter.vue';
+import DataTableNumberRangeFilter, {
+  type NumberRangeValue,
+} from './DataTableNumberRangeFilter.vue';
+import DataTableSelectFilter from './DataTableSelectFilter.vue';
+import DataTableTextFilter, { type TextFilterValue } from './DataTableTextFilter.vue';
 import DataTableViewOptions from './DataTableViewOptions.vue';
 
 export interface DataTableToolbarProps<TData> {
@@ -32,15 +38,39 @@ const emit = defineEmits<{
   (e: 'reset'): void;
 }>();
 
-const facetedFilters = computed(() =>
-  props.filterDefs.filter((f): f is Extract<FilterDef, { type: 'faceted' }> => f.type === 'faceted')
-);
-
 function getFilterValues(val: unknown): (string | number)[] {
   if (Array.isArray(val)) {
     return val as (string | number)[];
   }
   return [];
+}
+
+function getSelectValue(val: unknown): string | number | undefined {
+  if (typeof val === 'string' || typeof val === 'number') {
+    return val;
+  }
+  return undefined;
+}
+
+function getDateRangeValue(val: unknown): DateRangeValue | undefined {
+  if (val && typeof val === 'object') {
+    return val as DateRangeValue;
+  }
+  return undefined;
+}
+
+function getNumberRangeValue(val: unknown): NumberRangeValue | undefined {
+  if (val && typeof val === 'object') {
+    return val as NumberRangeValue;
+  }
+  return undefined;
+}
+
+function getTextValue(val: unknown): TextFilterValue | string | undefined {
+  if (typeof val === 'string' || (val && typeof val === 'object')) {
+    return val as TextFilterValue | string;
+  }
+  return undefined;
 }
 </script>
 
@@ -54,12 +84,47 @@ function getFilterValues(val: unknown): (string | number)[] {
         @update:model-value="(val) => emit('update:searchQuery', String(val))"
       />
 
-      <template v-for="filter in facetedFilters" :key="filter.id">
+      <template v-for="filter in filterDefs" :key="filter.id">
+        <!-- Faceted Filter -->
         <DataTableFacetedFilter
-          v-if="Array.isArray(filter.options)"
+          v-if="filter.type === 'faceted' && Array.isArray(filter.options)"
           :title="filter.title"
           :options="filter.options"
           :model-value="getFilterValues(filters[filter.id])"
+          @update:model-value="(val) => emit('update:filter', filter.id, val)"
+        />
+
+        <!-- Select Filter -->
+        <DataTableSelectFilter
+          v-else-if="filter.type === 'select'"
+          :title="filter.title"
+          :options="filter.options"
+          :value="getSelectValue(filters[filter.id])"
+          @update:value="(val) => emit('update:filter', filter.id, val)"
+        />
+
+        <!-- Date Range Filter -->
+        <DataTableDateRangeFilter
+          v-else-if="filter.type === 'date-range'"
+          :title="filter.title"
+          :model-value="getDateRangeValue(filters[filter.id])"
+          @update:model-value="(val) => emit('update:filter', filter.id, val)"
+        />
+
+        <!-- Number Range Filter -->
+        <DataTableNumberRangeFilter
+          v-else-if="filter.type === 'number-range'"
+          :title="filter.title"
+          :model-value="getNumberRangeValue(filters[filter.id])"
+          @update:model-value="(val) => emit('update:filter', filter.id, val)"
+        />
+
+        <!-- Text Filter -->
+        <DataTableTextFilter
+          v-else-if="filter.type === 'text'"
+          :title="filter.title"
+          :placeholder="filter.placeholder"
+          :model-value="getTextValue(filters[filter.id])"
           @update:model-value="(val) => emit('update:filter', filter.id, val)"
         />
       </template>
@@ -83,3 +148,4 @@ function getFilterValues(val: unknown): (string | number)[] {
     </div>
   </div>
 </template>
+

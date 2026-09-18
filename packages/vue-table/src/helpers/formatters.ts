@@ -1,5 +1,5 @@
 import type { ColumnDef, Row } from '@tanstack/vue-table';
-import { Badge } from '@tuquet/vue-ui';
+import { Avatar, AvatarFallback, AvatarImage, Badge } from '@tuquet/vue-ui';
 import { type Component, h } from 'vue';
 import CopyableCell from '../components/CopyableCell.vue';
 import DataTableRowActions, {
@@ -202,6 +202,79 @@ export function createCopyableColumn<TData>(
         value: String(val),
         truncateLength,
       });
+    },
+    enableSorting,
+  };
+}
+
+// --- Avatar Column ---
+export interface AvatarColumnOptions<TData> {
+  header: string;
+  id?: string;
+  nameKey: keyof TData & string;
+  srcKey?: keyof TData & string;
+  descriptionKey?: keyof TData & string;
+  size?: 'sm' | 'base' | 'lg';
+  enableSorting?: boolean;
+}
+
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 0 || !parts[0]) return '?';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  const first = parts[0][0] ?? '';
+  const last = parts[parts.length - 1]?.[0] ?? '';
+  return (first + last).toUpperCase();
+}
+
+export function createAvatarColumn<TData>(
+  options: AvatarColumnOptions<TData>
+): ColumnDef<TData, unknown> {
+  const {
+    nameKey,
+    srcKey,
+    descriptionKey,
+    header,
+    id = nameKey,
+    size = 'sm',
+    enableSorting = true,
+  } = options;
+
+  return {
+    id,
+    accessorKey: nameKey,
+    header,
+    cell: ({ row }: { row: Row<TData> }) => {
+      const name = String(row.original[nameKey] ?? '');
+      const src = srcKey ? String(row.original[srcKey] ?? '') : '';
+      const description = descriptionKey ? String(row.original[descriptionKey] ?? '') : '';
+      const initials = getInitials(name);
+
+      const avatarClasses =
+        size === 'sm'
+          ? 'h-8 w-8 text-xs'
+          : size === 'lg'
+            ? 'h-12 w-12 text-base'
+            : 'h-10 w-10 text-sm';
+
+      const avatarChildren = [
+        src ? h(AvatarImage, { src, alt: name }) : null,
+        h(AvatarFallback, null, () => initials),
+      ].filter(Boolean);
+
+      const avatarVNode = h(Avatar, { class: avatarClasses }, () => avatarChildren);
+
+      const textChildren = [
+        h('span', { class: 'font-medium text-sm text-foreground leading-none' }, name),
+        description
+          ? h('span', { class: 'text-xs text-muted-foreground leading-none mt-1' }, description)
+          : null,
+      ].filter(Boolean);
+
+      return h('div', { class: 'flex items-center gap-3' }, [
+        avatarVNode,
+        h('div', { class: 'flex flex-col' }, textChildren),
+      ]);
     },
     enableSorting,
   };
