@@ -7,3 +7,7 @@ export { default as DataTableViewOptions } from './DataTableViewOptions.vue';
 export { default as DataTableFloatingBar } from './DataTableFloatingBar.vue';
 export { default as DataTableRowActions, type RowActionItem } from './DataTableRowActions.vue';
 export { default as CopyableCell } from './CopyableCell.vue';
+export {
+  default as DataTableSelectFilter,
+  type SelectFilterOption,
+} from './DataTableSelectFilter.vue';

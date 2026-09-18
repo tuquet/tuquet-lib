@@ -96,6 +96,7 @@ const remote = useRemoteTable<User>({
 | **`<DataTablePagination>`**    | Page navigation (first, prev, next, last), rows per page selector (10/20/50/100), selection summary.                      |
 | **`<DataTableColumnHeader>`**  | Sortable column header button with Asc / Desc / Clear icons and hide column menu.                                         |
 | **`<DataTableFacetedFilter>`** | Multi-select category popover with command search, item checkboxes, and count badges.                                     |
+| **`<DataTableSelectFilter>`**  | Single-select filter dropdown menu with Radio group, clear button, and custom option icons.                               |
 | **`<DataTableViewOptions>`**   | Dropdown menu to toggle column visibility.                                                                                |
 | **`<CopyableCell>`**           | Inline cell rendering with click-to-copy button and checkmark confirmation.                                               |
 
