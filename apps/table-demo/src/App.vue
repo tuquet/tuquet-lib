@@ -3,6 +3,7 @@ import {
   DataTable,
   DataTableDateRangeFilter,
   createActionsColumn,
+  createAvatarColumn,
   createBadgeColumn,
   createCopyableColumn,
   createCurrencyColumn,
@@ -68,11 +69,11 @@ const columns: ColumnDef<Order>[] = [
     accessorKey: 'orderNumber',
     header: 'Order #',
   }),
-  {
-    accessorKey: 'customer',
+  createAvatarColumn<Order>({
+    nameKey: 'customer',
+    descriptionKey: 'email',
     header: 'Customer',
-    enableSorting: true,
-  },
+  }),
   createBadgeColumn<Order, Order['status']>({
     accessorKey: 'status',
     header: 'Status',
@@ -133,6 +134,19 @@ const remote = useRemoteTable<Order>({
         { label: 'Cancelled', value: 'cancelled' },
       ],
     },
+    {
+      id: 'total',
+      title: 'Total',
+      type: 'number-range',
+      min: 0,
+      max: 2000,
+    },
+    {
+      id: 'orderNumber',
+      title: 'Order #',
+      type: 'text',
+      placeholder: 'Filter order number...',
+    },
   ],
   fetcher: async ({ page, limit, sort, search, filters }) => {
     // Simulate server response delay
@@ -157,6 +171,31 @@ const remote = useRemoteTable<Order>({
       filtered = filtered.filter((o) => statusSet.has(o.status));
     }
 
+    // Filter by total number-range
+    if (filters.total && typeof filters.total === 'object') {
+      const { min, max } = filters.total as { min?: number | null; max?: number | null };
+      if (min !== undefined && min !== null) {
+        filtered = filtered.filter((o) => o.total >= min);
+      }
+      if (max !== undefined && max !== null) {
+        filtered = filtered.filter((o) => o.total <= max);
+      }
+    }
+
+    // Filter by orderNumber text filter
+    if (filters.orderNumber && typeof filters.orderNumber === 'object') {
+      const { operator, value } = filters.orderNumber as { operator?: string; value?: string };
+      if (value) {
+        const q = value.toLowerCase();
+        filtered = filtered.filter((o) => {
+          const num = o.orderNumber.toLowerCase();
+          if (operator === 'exact') return num === q;
+          if (operator === 'startsWith') return num.startsWith(q);
+          return num.includes(q);
+        });
+      }
+    }
+
     // Filter by createdAt date range
     if (filters.createdAt && typeof filters.createdAt === 'object') {
       const range = filters.createdAt as DateRangeValue;
@@ -173,11 +212,14 @@ const remote = useRemoteTable<Order>({
       const isDesc = sort.startsWith('-');
       const field = isDesc ? sort.substring(1) : sort;
       filtered.sort((a, b) => {
-        const valA = (a as any)[field];
-        const valB = (b as any)[field];
-        if (valA < valB) return isDesc ? 1 : -1;
-        if (valA > valB) return isDesc ? -1 : 1;
-        return 0;
+        const valA = (a as unknown as Record<string, unknown>)[field];
+        const valB = (b as unknown as Record<string, unknown>)[field];
+        if (typeof valA === 'number' && typeof valB === 'number') {
+          return isDesc ? valB - valA : valA - valB;
+        }
+        const strA = String(valA ?? '');
+        const strB = String(valB ?? '');
+        return isDesc ? strB.localeCompare(strA) : strA.localeCompare(strB);
       });
     }
 
