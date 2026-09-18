@@ -92,10 +92,12 @@ const remote = useRemoteTable<User>({
 | **`<DataTable>`**              | Container component orchestrating toolbar, header, body with loading skeletons, empty state, error retry, and pagination. |
 | **`<DataTableToolbar>`**       | Search input, dynamic faceted filter triggers, reset button, and custom action slots (`#actions`).                        |
 | **`<DataTableFloatingBar>`**   | Floating bulk action bar animated at bottom with selection count badge, `#actions` slot, and `Clear` (Esc) trigger.       |
+| **`<DataTableRowActions>`**    | Dropdown action menu (3 dots) with custom actions, icons, separators, and destructive variants.                           |
 | **`<DataTablePagination>`**    | Page navigation (first, prev, next, last), rows per page selector (10/20/50/100), selection summary.                      |
 | **`<DataTableColumnHeader>`**  | Sortable column header button with Asc / Desc / Clear icons and hide column menu.                                         |
 | **`<DataTableFacetedFilter>`** | Multi-select category popover with command search, item checkboxes, and count badges.                                     |
 | **`<DataTableViewOptions>`**   | Dropdown menu to toggle column visibility.                                                                                |
+| **`<CopyableCell>`**           | Inline cell rendering with click-to-copy button and checkmark confirmation.                                               |
 
 ## 🔘 Row Selection & Bulk Actions
 
@@ -123,6 +125,94 @@ In your template, pass bulk action buttons into the `#bulk-actions` slot:
     </Button>
   </template>
 </DataTable>
+```
+
+## 🎨 Pre-built Column Formatters
+
+Build clean, consistent table columns in seconds with typed helpers:
+
+```ts
+import {
+  createSelectionColumn,
+  createDateColumn,
+  createBadgeColumn,
+  createCurrencyColumn,
+  createCopyableColumn,
+  createActionsColumn,
+  type ColumnDef,
+} from '@tuquet/vue-table';
+
+const columns: ColumnDef<Order>[] = [
+  createSelectionColumn(),
+  createCopyableColumn({ accessorKey: 'orderNumber', header: 'Order #' }),
+  createCurrencyColumn({ accessorKey: 'total', header: 'Total', currency: 'USD' }),
+  createBadgeColumn({
+    accessorKey: 'status',
+    header: 'Status',
+    variants: {
+      completed: 'default',
+      pending: 'secondary',
+      cancelled: 'destructive',
+    },
+  }),
+  createDateColumn({
+    accessorKey: 'createdAt',
+    header: 'Ordered At',
+    relative: true, // "5m ago", "yesterday", etc.
+  }),
+  createActionsColumn({
+    actions: [
+      { id: 'view', label: 'View Details', onSelect: (row) => viewOrder(row.original) },
+      {
+        id: 'delete',
+        label: 'Delete',
+        variant: 'destructive',
+        separator: true,
+        onSelect: (row) => remote.deleteRow(row.original.id),
+      },
+    ],
+  }),
+];
+```
+
+## 🔄 Optimistic CRUD Local Mutations
+
+Pair `@tuquet/vue-table` with `@tuquet/vue-form` or any modal/sheet for instant UI updates without slow network refetches:
+
+```ts
+// Update a record in-place after modal edit
+remote.mutateRow(orderId, { status: 'completed' });
+
+// Delete row(s) and automatically decrement total
+remote.deleteRow(orderId);
+remote.deleteRow([orderId1, orderId2]); // bulk delete
+
+// Prepend newly created item from drawer to top
+remote.prependRow(newOrder);
+
+// Force refresh from server when needed
+await remote.refetch();
+```
+
+## 📤 CSV & TSV Data Export
+
+Export table data with automatic Excel UTF-8 BOM encoding:
+
+```ts
+import { exportToCsv, copyToClipboardAsTsv } from '@tuquet/vue-table';
+
+// Download current page or filtered records
+exportToCsv({
+  data: remote.data.value,
+  columns,
+  filename: 'orders-export.csv',
+});
+
+// Or copy selected rows for pasting into Google Sheets / Excel
+await copyToClipboardAsTsv({
+  data: remote.selectedRows.value,
+  columns,
+});
 ```
 
 ## 🔌 Query Adapters

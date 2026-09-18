@@ -5,3 +5,5 @@ export { default as DataTableColumnHeader } from './DataTableColumnHeader.vue';
 export { default as DataTableFacetedFilter } from './DataTableFacetedFilter.vue';
 export { default as DataTableViewOptions } from './DataTableViewOptions.vue';
 export { default as DataTableFloatingBar } from './DataTableFloatingBar.vue';
+export { default as DataTableRowActions, type RowActionItem } from './DataTableRowActions.vue';
+export { default as CopyableCell } from './CopyableCell.vue';
