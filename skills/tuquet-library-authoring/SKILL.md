@@ -115,7 +115,29 @@ export default defineConfig({
 
 ---
 
-## 5. ✅ Quality Verification Checklist
+## 5. 📚 Zero-Undocumented Code Invariant (MANDATORY)
+
+Documentation is treated as a hard gatekeeper. **AI Agents MUST NEVER commit code without comprehensive documentation.**
+
+### 5.1. The Invariant
+
+1. **Zero Undocumented Features:** Adding or modifying any exported function, class, type, or component MUST be accompanied by an update to the package `README.md`.
+2. **Monorepo Catalog Sync:** When a new package in `packages/*` or app in `apps/*` is created, it MUST be cataloged in the Root `README.md` in the exact same commit.
+3. **Automated Enforcement:** The command `pnpm check:docs` runs automatically during `pnpm test` and inside Git `pre-commit`. Commits missing documentation will fail immediately.
+
+### 5.2. Mandatory Structure of Package `README.md`
+
+Every package `README.md` MUST contain at least these 5 sections:
+
+1. **Title & Value Proposition:** `# @tuquet/<name>` with a concise 1-2 sentence description of its purpose.
+2. **Installation:** Clear package manager command (`pnpm add @tuquet/<name>`).
+3. **Quickstart / Minimal Working Example:** Complete, runnable TypeScript/Vue snippet inside triple-backtick code blocks.
+4. **API / Component Catalog:** Table or list documenting exported APIs, props, return types, options.
+5. **License & Standard Compliance:** Dual ESM/CJS exports, TypeScript types, and MIT license.
+
+---
+
+## 6. ✅ Quality Verification Checklist
 
 Before committing changes to any package, verify:
 
@@ -124,4 +146,5 @@ Before committing changes to any package, verify:
 - [ ] `pnpm typecheck` produces 0 type errors.
 - [ ] `pnpm lint` produces 0 warnings (`--max-warnings 0`).
 - [ ] `pnpm check:exports` confirms publint reports `All good!`.
-- [ ] Package `README.md` is updated with code snippets and API descriptions.
+- [ ] `pnpm check:docs` confirms documentation invariant passes (`All packages and apps have valid documentation in README.md!`).
+- [ ] Root `README.md` is synchronized with the new package/app entry.

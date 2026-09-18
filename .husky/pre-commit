@@ -1,1 +1,2 @@
+pnpm check:docs
 pnpm lint-staged

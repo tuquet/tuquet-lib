@@ -54,6 +54,11 @@ tuquet-lib/
    - Builds MUST NOT run unmanaged npm scripts across folders.
    - All tasks (`build`, `test`, `typecheck`, `lint`, `check:exports`) are scheduled via `turbo.json` with dependency graph awareness (`dependsOn: ["^build"]`).
 
+5. **Zero-Undocumented Code & Root Catalog Sync Invariant:**
+   - Every library under `packages/*` and runnable app under `apps/*` MUST maintain an up-to-date, comprehensive `README.md` containing installation, quickstart examples, and API specifications.
+   - Any new package or application MUST be registered in the central catalog of Root `README.md`.
+   - Automated tool `pnpm check:docs` runs in `test` and Git `pre-commit` to prevent committing undocumented code.
+
 ---
 
 ## 3. 🔄 Workspace Dependency Resolution
