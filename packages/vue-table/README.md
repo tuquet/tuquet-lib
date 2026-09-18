@@ -233,16 +233,43 @@ Generates query string:
 ?page=1&limit=10&sort[createdAt]=desc&filter[status][in]=active,pending&filter[q]=keyword
 ```
 
-### Custom Adapter
+### 3. `SpringPageableAdapter`
 
-Implement the `QueryAdapter` interface:
+For Spring Boot / Spring Data REST endpoints:
+
+```
+?page=0&size=20&sort=createdAt,desc&sort=name,asc&q=keyword
+```
 
 ```ts
-const myAdapter: QueryAdapter = {
+import { SpringPageableAdapter, useRemoteTable } from '@tuquet/vue-table';
+
+const remote = useRemoteTable({
+  adapter: new SpringPageableAdapter(),
+  // ...
+});
+```
+
+### 4. Custom Adapter with `createCustomAdapter()`
+
+Create custom query adapters in seconds:
+
+```ts
+import { createCustomAdapter, useRemoteTable } from '@tuquet/vue-table';
+
+const myAdapter = createCustomAdapter({
   name: 'my-custom',
-  serialize: (state) => ({ ... }),
-  deserialize: (query) => ({ ... }),
-};
+  serialize: (state) => ({
+    offset: state.pagination.pageIndex * state.pagination.pageSize,
+    count: state.pagination.pageSize,
+  }),
+  deserialize: (query) => ({
+    pagination: {
+      pageIndex: Math.floor(Number(query.offset || 0) / Number(query.count || 10)),
+      pageSize: Number(query.count || 10),
+    },
+  }),
+});
 ```
 
 ## 📄 License

@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { createCustomAdapter } from '../src/adapters/custom.js';
 import { LhsBracketsAdapter } from '../src/adapters/lhs-brackets.js';
+import { SpringPageableAdapter } from '../src/adapters/spring-pageable.js';
 import { StandardRestAdapter } from '../src/adapters/standard-rest.js';
 import type { TableState } from '../src/types/index.js';
 
@@ -98,5 +100,64 @@ describe('LhsBracketsAdapter', () => {
       status: ['open', 'in_progress'],
       department: 'engineering',
     });
+  });
+});
+
+describe('SpringPageableAdapter', () => {
+  const adapter = new SpringPageableAdapter();
+
+  const mockState: TableState = {
+    pagination: { pageIndex: 1, pageSize: 20 },
+    sorting: [
+      { id: 'createdAt', desc: true },
+      { id: 'name', desc: false },
+    ],
+    filters: { status: 'active' },
+    search: 'spring',
+  };
+
+  it('serializes table state into Spring Pageable format', () => {
+    const query = adapter.serialize(mockState);
+    expect(query).toEqual({
+      page: 1, // 0-indexed in Spring
+      size: 20,
+      sort: ['createdAt,desc', 'name,asc'],
+      q: 'spring',
+      status: 'active',
+    });
+  });
+
+  it('deserializes Spring Pageable query params back into table state', () => {
+    const rawQuery = {
+      page: '2',
+      size: '50',
+      sort: ['createdAt,desc', 'name,asc'],
+      q: 'spring',
+      status: 'active',
+    };
+
+    const deserialized = adapter.deserialize(rawQuery);
+    expect(deserialized.pagination).toEqual({ pageIndex: 2, pageSize: 50 });
+    expect(deserialized.sorting).toEqual([
+      { id: 'createdAt', desc: true },
+      { id: 'name', desc: false },
+    ]);
+    expect(deserialized.search).toBe('spring');
+  });
+});
+
+describe('createCustomAdapter', () => {
+  it('creates custom adapter with serialize and deserialize methods', () => {
+    const custom = createCustomAdapter({
+      name: 'my-adapter',
+      serialize: (s) => ({ p: s.pagination.pageIndex }),
+      deserialize: (q) => ({ pagination: { pageIndex: Number(q.p), pageSize: 10 } }),
+    });
+
+    expect(custom.name).toBe('my-adapter');
+    expect(custom.serialize({ pagination: { pageIndex: 5, pageSize: 10 } } as any)).toEqual({
+      p: 5,
+    });
+    expect(custom.deserialize({ p: '3' })).toEqual({ pagination: { pageIndex: 3, pageSize: 10 } });
   });
 });
