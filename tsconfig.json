@@ -3,6 +3,7 @@
   "references": [
     { "path": "./packages/core" },
     { "path": "./packages/utils" },
+    { "path": "./packages/lunar" },
     { "path": "./examples/node-demo" }
   ]
 }
