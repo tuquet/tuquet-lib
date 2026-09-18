@@ -52,6 +52,18 @@ export class StandardRestAdapter implements QueryAdapter {
           if (value.length > 0) {
             query[key] = value.join(',');
           }
+        } else if (typeof value === 'object' && value !== null) {
+          const obj = value as Record<string, unknown>;
+          if ('start' in obj || 'end' in obj) {
+            if (obj.start !== undefined && obj.start !== null && obj.start !== '') {
+              query[`${key}_start`] = obj.start;
+            }
+            if (obj.end !== undefined && obj.end !== null && obj.end !== '') {
+              query[`${key}_end`] = obj.end;
+            }
+          } else {
+            query[key] = value;
+          }
         } else {
           query[key] = value;
         }
@@ -106,7 +118,25 @@ export class StandardRestAdapter implements QueryAdapter {
     const filters: Record<string, unknown> = {};
     for (const [key, val] of Object.entries(query)) {
       if (!knownKeys.has(key) && val !== undefined && val !== null) {
-        if (typeof val === 'string' && val.includes(',')) {
+        if (key.endsWith('_start')) {
+          const baseKey = key.slice(0, -6);
+          const current =
+            filters[baseKey] &&
+            typeof filters[baseKey] === 'object' &&
+            !Array.isArray(filters[baseKey])
+              ? (filters[baseKey] as Record<string, unknown>)
+              : {};
+          filters[baseKey] = { ...current, start: String(val) };
+        } else if (key.endsWith('_end')) {
+          const baseKey = key.slice(0, -4);
+          const current =
+            filters[baseKey] &&
+            typeof filters[baseKey] === 'object' &&
+            !Array.isArray(filters[baseKey])
+              ? (filters[baseKey] as Record<string, unknown>)
+              : {};
+          filters[baseKey] = { ...current, end: String(val) };
+        } else if (typeof val === 'string' && val.includes(',')) {
           filters[key] = val.split(',').map((v) => v.trim());
         } else {
           filters[key] = val;

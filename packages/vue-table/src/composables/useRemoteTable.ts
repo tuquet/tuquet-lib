@@ -16,6 +16,7 @@ import {
 } from 'vue';
 import { StandardRestAdapter } from '../adapters/standard-rest.js';
 import type {
+  ColumnPinningState,
   ColumnSort,
   FetchParams,
   FetchResult,
@@ -39,6 +40,7 @@ export interface UseRemoteTableOptions<TData, TValue = unknown> {
   debounceMs?: number;
   adapter?: QueryAdapter;
   filters?: FilterDef[];
+  columnPinning?: ColumnPinningState;
   initialState?: Partial<TableState>;
 }
 
@@ -72,6 +74,10 @@ export interface UseRemoteTableReturn<TData> {
   prependRow: (newRow: TData) => void;
   appendRow: (newRow: TData) => void;
   setData: (updaterOrValue: TData[] | ((prev: TData[]) => TData[]), newTotal?: number) => void;
+
+  // Column Ergonomics
+  columnPinning: Ref<ColumnPinningState>;
+  setColumnPinning: (pinning: ColumnPinningState) => void;
 }
 
 export function useRemoteTable<TData, TValue = unknown>(
@@ -104,6 +110,9 @@ export function useRemoteTable<TData, TValue = unknown>(
   const columnFilters = ref<Record<string, unknown>>(initialState.filters ?? {});
   const searchQuery = ref<string>(initialState.search ?? '');
   const columnVisibility = ref<Record<string, boolean>>(initialState.columnVisibility ?? {});
+  const columnPinning = ref<ColumnPinningState>(
+    initialState.columnPinning ?? options.columnPinning ?? { left: [], right: [] }
+  );
   const rowSelection = ref<Record<string, boolean>>({});
 
   // URL Synchronization
@@ -163,6 +172,7 @@ export function useRemoteTable<TData, TValue = unknown>(
       filters: columnFilters.value,
       search: searchQuery.value,
       columnVisibility: columnVisibility.value,
+      columnPinning: columnPinning.value,
     };
 
     if (syncWithUrl) {
@@ -246,6 +256,9 @@ export function useRemoteTable<TData, TValue = unknown>(
       get columnVisibility() {
         return columnVisibility.value;
       },
+      get columnPinning() {
+        return columnPinning.value;
+      },
       get rowSelection() {
         return rowSelection.value;
       },
@@ -269,6 +282,10 @@ export function useRemoteTable<TData, TValue = unknown>(
         typeof updaterOrValue === 'function'
           ? updaterOrValue(columnVisibility.value)
           : updaterOrValue;
+    },
+    onColumnPinningChange: (updaterOrValue) => {
+      columnPinning.value =
+        typeof updaterOrValue === 'function' ? updaterOrValue(columnPinning.value) : updaterOrValue;
     },
     onRowSelectionChange: (updaterOrValue) => {
       rowSelection.value =
@@ -375,6 +392,10 @@ export function useRemoteTable<TData, TValue = unknown>(
     }
   };
 
+  const setColumnPinning = (pinning: ColumnPinningState) => {
+    columnPinning.value = pinning;
+  };
+
   if (getCurrentInstance()) {
     onMounted(() => {
       executeFetch();
@@ -409,5 +430,7 @@ export function useRemoteTable<TData, TValue = unknown>(
     prependRow,
     appendRow,
     setData,
+    columnPinning,
+    setColumnPinning,
   };
 }

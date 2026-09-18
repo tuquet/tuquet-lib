@@ -99,6 +99,9 @@ importers:
 
   packages/vue-table:
     dependencies:
+      '@internationalized/date':
+        specifier: ^3.12.4
+        version: 3.12.4
       '@tanstack/vue-table':
         specifier: ^8.21.3
         version: 8.21.3(vue@3.5.43(typescript@5.9.3))
@@ -145,6 +148,9 @@ importers:
 
   packages/vue-ui:
     dependencies:
+      '@internationalized/date':
+        specifier: ^3.12.4
+        version: 3.12.4
       '@vueuse/core':
         specifier: ^15.0.0
         version: 15.0.0(vue@3.5.43(typescript@5.9.3))

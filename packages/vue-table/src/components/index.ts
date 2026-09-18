@@ -11,3 +11,8 @@ export {
   default as DataTableSelectFilter,
   type SelectFilterOption,
 } from './DataTableSelectFilter.vue';
+export {
+  default as DataTableDateRangeFilter,
+  type DateRangeValue,
+  type DateRangePreset,
+} from './DataTableDateRangeFilter.vue';

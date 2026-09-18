@@ -1,6 +1,18 @@
 import './styles/globals.css';
 
 export * from './lib/utils.js';
+export type { DateRange } from 'reka-ui';
+export {
+  CalendarDate,
+  CalendarDateTime,
+  ZonedDateTime,
+  getLocalTimeZone,
+  today,
+  parseDate,
+  startOfMonth,
+  endOfMonth,
+  type DateValue,
+} from '@internationalized/date';
 
 export * from './components/ui/accordion/index.js';
 export * from './components/ui/alert/index.js';
@@ -24,6 +36,7 @@ export * from './components/ui/pagination/index.js';
 export * from './components/ui/popover/index.js';
 export * from './components/ui/progress/index.js';
 export * from './components/ui/radio-group/index.js';
+export * from './components/ui/range-calendar/index.js';
 export * from './components/ui/scroll-area/index.js';
 export * from './components/ui/select/index.js';
 export * from './components/ui/separator/index.js';

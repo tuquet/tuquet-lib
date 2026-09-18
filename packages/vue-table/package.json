@@ -33,6 +33,7 @@
     "check:exports": "publint"
   },
   "dependencies": {
+    "@internationalized/date": "^3.12.4",
     "@tanstack/vue-table": "^8.21.3",
     "@tuquet/vue-ui": "workspace:*",
     "@vueuse/core": "^15.0.0",

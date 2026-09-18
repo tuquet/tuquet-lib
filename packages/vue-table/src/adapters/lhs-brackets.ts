@@ -48,6 +48,18 @@ export class LhsBracketsAdapter implements QueryAdapter {
           if (value.length > 0) {
             query[`${this.filterPrefix}[${key}][in]`] = value.join(',');
           }
+        } else if (typeof value === 'object' && value !== null) {
+          const obj = value as Record<string, unknown>;
+          if ('start' in obj || 'end' in obj) {
+            if (obj.start !== undefined && obj.start !== null && obj.start !== '') {
+              query[`${this.filterPrefix}[${key}][gte]`] = obj.start;
+            }
+            if (obj.end !== undefined && obj.end !== null && obj.end !== '') {
+              query[`${this.filterPrefix}[${key}][lte]`] = obj.end;
+            }
+          } else {
+            query[`${this.filterPrefix}[${key}]`] = value;
+          }
         } else {
           query[`${this.filterPrefix}[${key}]`] = value;
         }
@@ -98,6 +110,18 @@ export class LhsBracketsAdapter implements QueryAdapter {
           result.search = String(v);
         } else if (operator === 'in' && typeof v === 'string') {
           filters[field] = v.split(',').map((item) => item.trim());
+        } else if (operator === 'gte') {
+          const current =
+            filters[field] && typeof filters[field] === 'object' && !Array.isArray(filters[field])
+              ? (filters[field] as Record<string, unknown>)
+              : {};
+          filters[field] = { ...current, start: String(v) };
+        } else if (operator === 'lte') {
+          const current =
+            filters[field] && typeof filters[field] === 'object' && !Array.isArray(filters[field])
+              ? (filters[field] as Record<string, unknown>)
+              : {};
+          filters[field] = { ...current, end: String(v) };
         } else {
           filters[field] = v;
         }

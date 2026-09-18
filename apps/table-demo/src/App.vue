@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
   DataTable,
+  DataTableDateRangeFilter,
   createActionsColumn,
   createBadgeColumn,
   createCopyableColumn,
@@ -11,9 +12,11 @@ import {
   copyToClipboardAsTsv,
   useRemoteTable,
   type ColumnDef,
+  type TableDensity,
+  type DateRangeValue,
 } from '@tuquet/vue-table';
 import { Button } from '@tuquet/vue-ui';
-import { Download, Plus, RefreshCw, Trash2, CheckCircle, Copy } from 'lucide-vue-next';
+import { Download, Plus, Trash2, CheckCircle, Copy } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 interface Order {
@@ -42,7 +45,7 @@ const mockDatabase: Order[] = Array.from({ length: 65 }, (_, i) => {
     'Steve Rogers',
   ];
   const name = names[i % names.length];
-  const daysAgo = (i * 3) % 30;
+  const daysAgo = (i * 2) % 30;
   const date = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000);
 
   return {
@@ -57,6 +60,7 @@ const mockDatabase: Order[] = Array.from({ length: 65 }, (_, i) => {
 });
 
 const copiedFeedback = ref(false);
+const density = ref<TableDensity>('normal');
 
 const columns: ColumnDef<Order>[] = [
   createSelectionColumn<Order>(),
@@ -114,6 +118,10 @@ const remote = useRemoteTable<Order>({
   columns,
   defaultPageSize: 10,
   syncWithUrl: false,
+  columnPinning: {
+    left: ['select'],
+    right: ['actions'],
+  },
   filters: [
     {
       id: 'status',
@@ -147,6 +155,17 @@ const remote = useRemoteTable<Order>({
     if (filters.status && Array.isArray(filters.status) && filters.status.length > 0) {
       const statusSet = new Set(filters.status);
       filtered = filtered.filter((o) => statusSet.has(o.status));
+    }
+
+    // Filter by createdAt date range
+    if (filters.createdAt && typeof filters.createdAt === 'object') {
+      const range = filters.createdAt as DateRangeValue;
+      if (range.start) {
+        filtered = filtered.filter((o) => o.createdAt.split('T')[0] >= range.start!);
+      }
+      if (range.end) {
+        filtered = filtered.filter((o) => o.createdAt.split('T')[0] <= range.end!);
+      }
     }
 
     // Sort
@@ -230,10 +249,38 @@ function handleBulkDelete() {
       <div>
         <h1 class="text-2xl font-bold tracking-tight">Orders Management</h1>
         <p class="text-sm text-muted-foreground mt-1">
-          Demonstrating remote pagination, filtering, sorting, optimistic mutations, and export.
+          Demonstrating remote pagination, filtering, date range, column pinning, density, optimistic mutations, and export.
         </p>
       </div>
       <div class="flex items-center gap-2">
+        <!-- Density switch -->
+        <div class="flex items-center rounded-lg border bg-muted/30 p-0.5 text-xs">
+          <button
+            type="button"
+            class="px-2.5 py-1 rounded-md transition-colors"
+            :class="density === 'compact' ? 'bg-background shadow-xs font-semibold text-foreground' : 'text-muted-foreground hover:text-foreground'"
+            @click="density = 'compact'"
+          >
+            Compact
+          </button>
+          <button
+            type="button"
+            class="px-2.5 py-1 rounded-md transition-colors"
+            :class="density === 'normal' ? 'bg-background shadow-xs font-semibold text-foreground' : 'text-muted-foreground hover:text-foreground'"
+            @click="density = 'normal'"
+          >
+            Normal
+          </button>
+          <button
+            type="button"
+            class="px-2.5 py-1 rounded-md transition-colors"
+            :class="density === 'comfortable' ? 'bg-background shadow-xs font-semibold text-foreground' : 'text-muted-foreground hover:text-foreground'"
+            @click="density = 'comfortable'"
+          >
+            Comfortable
+          </button>
+        </div>
+
         <Button variant="outline" size="sm" @click="handleExportCsv">
           <Download class="mr-2 h-4 w-4" />
           Export CSV
@@ -250,7 +297,16 @@ function handleBulkDelete() {
     </header>
 
     <!-- Data Table -->
-    <DataTable :remote="remote">
+    <DataTable :remote="remote" :density="density">
+      <!-- Date Range Filter in Filters Slot -->
+      <template #filters>
+        <DataTableDateRangeFilter
+          title="Date Range"
+          :model-value="remote.filters.value.createdAt as DateRangeValue"
+          @update:model-value="(val) => remote.setFilter('createdAt', val)"
+        />
+      </template>
+
       <!-- Bulk Actions in Floating Bar -->
       <template #bulk-actions="{ selectedCount }">
         <Button variant="outline" size="sm" class="h-7 text-xs" @click="handleBulkComplete">

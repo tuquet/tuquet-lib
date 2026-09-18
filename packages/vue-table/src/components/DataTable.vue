@@ -11,9 +11,11 @@ import {
   TableHeader,
   TableRow,
 } from '@tuquet/vue-ui';
+import type { Column } from '@tanstack/vue-table';
 import { AlertCircle, RefreshCw } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, type CSSProperties } from 'vue';
 import type { UseRemoteTableReturn } from '../composables/useRemoteTable.js';
+import type { TableDensity } from '../types/index.js';
 import DataTableFloatingBar from './DataTableFloatingBar.vue';
 import DataTablePagination from './DataTablePagination.vue';
 import DataTableToolbar from './DataTableToolbar.vue';
@@ -25,6 +27,7 @@ interface DataTableProps<TData> {
   showFloatingBar?: boolean;
   emptyMessage?: string;
   skeletonRows?: number;
+  density?: TableDensity;
 }
 
 const props = withDefaults(defineProps<DataTableProps<any>>(), {
@@ -33,6 +36,7 @@ const props = withDefaults(defineProps<DataTableProps<any>>(), {
   showFloatingBar: true,
   emptyMessage: 'No results found.',
   skeletonRows: 5,
+  density: 'normal',
 });
 
 const table = computed(() => props.remote.table);
@@ -40,6 +44,28 @@ const isLoading = computed(() => props.remote.isLoading.value);
 const isError = computed(() => props.remote.isError.value);
 const error = computed(() => props.remote.error.value);
 const columnCount = computed(() => table.value.getAllColumns().length);
+
+const densityClasses = computed(() => {
+  switch (props.density) {
+    case 'compact':
+      return 'py-1.5 px-2.5 text-xs';
+    case 'comfortable':
+      return 'py-4 px-4 text-sm';
+    default:
+      return 'py-2.5 px-4 text-sm';
+  }
+});
+
+function getPinningStyle(column: Column<any>): CSSProperties {
+  const isPinned = column.getIsPinned();
+  if (!isPinned) return {};
+  return {
+    position: 'sticky',
+    left: isPinned === 'left' ? `${column.getStart('left')}px` : undefined,
+    right: isPinned === 'right' ? `${column.getAfter('right')}px` : undefined,
+    zIndex: isPinned ? 10 : undefined,
+  };
+}
 </script>
 
 <template>
@@ -90,7 +116,7 @@ const columnCount = computed(() => table.value.getAllColumns().length);
     </div>
 
     <!-- Table Container -->
-    <div v-else class="rounded-md border">
+    <div v-else class="rounded-md border overflow-x-auto relative">
       <Table>
         <TableHeader>
           <TableRow
@@ -100,6 +126,13 @@ const columnCount = computed(() => table.value.getAllColumns().length);
             <TableHead
               v-for="header in headerGroup.headers"
               :key="header.id"
+              :style="getPinningStyle(header.column)"
+              :class="[
+                densityClasses,
+                header.column.getIsPinned() ? 'sticky z-20 bg-background/95 backdrop-blur' : '',
+                header.column.getIsLastColumn('left') ? 'border-r shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]' : '',
+                header.column.getIsFirstColumn('right') ? 'border-l shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.1)]' : '',
+              ]"
             >
               <FlexRender
                 v-if="!header.isPlaceholder"
@@ -113,8 +146,12 @@ const columnCount = computed(() => table.value.getAllColumns().length);
           <!-- Loading Skeletons -->
           <template v-if="isLoading">
             <TableRow v-for="i in skeletonRows" :key="`skeleton-${i}`">
-              <TableCell v-for="j in columnCount" :key="`skeleton-cell-${j}`">
-                <Skeleton class="h-6 w-full" />
+              <TableCell
+                v-for="j in columnCount"
+                :key="`skeleton-cell-${j}`"
+                :class="densityClasses"
+              >
+                <Skeleton class="h-5 w-full" />
               </TableCell>
             </TableRow>
           </template>
@@ -129,6 +166,13 @@ const columnCount = computed(() => table.value.getAllColumns().length);
               <TableCell
                 v-for="cell in row.getVisibleCells()"
                 :key="cell.id"
+                :style="getPinningStyle(cell.column)"
+                :class="[
+                  densityClasses,
+                  cell.column.getIsPinned() ? 'sticky z-10 bg-background/95 backdrop-blur' : '',
+                  cell.column.getIsLastColumn('left') ? 'border-r shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]' : '',
+                  cell.column.getIsFirstColumn('right') ? 'border-l shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.1)]' : '',
+                ]"
               >
                 <FlexRender
                   :render="cell.column.columnDef.cell"
@@ -141,7 +185,7 @@ const columnCount = computed(() => table.value.getAllColumns().length);
           <!-- Empty State -->
           <template v-else>
             <TableRow>
-              <TableCell :colspan="columnCount" class="h-24 text-center">
+              <TableCell :colspan="columnCount" class="h-24 text-center" :class="densityClasses">
                 <slot name="empty">
                   {{ emptyMessage }}
                 </slot>

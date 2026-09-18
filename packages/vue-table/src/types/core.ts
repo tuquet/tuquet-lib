@@ -32,12 +32,20 @@ export interface ColumnFilterValue<T = unknown> {
 
 export type FiltersState = Record<string, unknown>;
 
+export interface ColumnPinningState {
+  left?: string[];
+  right?: string[];
+}
+
+export type TableDensity = 'compact' | 'normal' | 'comfortable';
+
 export interface TableState {
   pagination: PaginationState;
   sorting: SortingState;
   filters: FiltersState;
   search?: string;
   columnVisibility?: Record<string, boolean>;
+  columnPinning?: ColumnPinningState;
 }
 
 export interface FetchParams {

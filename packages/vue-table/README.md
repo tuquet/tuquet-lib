@@ -87,18 +87,19 @@ const remote = useRemoteTable<User>({
 
 ## 📚 Components Included
 
-| Component                      | Description                                                                                                               |
-| :----------------------------- | :------------------------------------------------------------------------------------------------------------------------ |
-| **`<DataTable>`**              | Container component orchestrating toolbar, header, body with loading skeletons, empty state, error retry, and pagination. |
-| **`<DataTableToolbar>`**       | Search input, dynamic faceted filter triggers, reset button, and custom action slots (`#actions`).                        |
-| **`<DataTableFloatingBar>`**   | Floating bulk action bar animated at bottom with selection count badge, `#actions` slot, and `Clear` (Esc) trigger.       |
-| **`<DataTableRowActions>`**    | Dropdown action menu (3 dots) with custom actions, icons, separators, and destructive variants.                           |
-| **`<DataTablePagination>`**    | Page navigation (first, prev, next, last), rows per page selector (10/20/50/100), selection summary.                      |
-| **`<DataTableColumnHeader>`**  | Sortable column header button with Asc / Desc / Clear icons and hide column menu.                                         |
-| **`<DataTableFacetedFilter>`** | Multi-select category popover with command search, item checkboxes, and count badges.                                     |
-| **`<DataTableSelectFilter>`**  | Single-select filter dropdown menu with Radio group, clear button, and custom option icons.                               |
-| **`<DataTableViewOptions>`**   | Dropdown menu to toggle column visibility.                                                                                |
-| **`<CopyableCell>`**           | Inline cell rendering with click-to-copy button and checkmark confirmation.                                               |
+| Component                        | Description                                                                                                                |
+| :------------------------------- | :------------------------------------------------------------------------------------------------------------------------- |
+| **`<DataTable>`**                | Container component orchestrating toolbar, header, body with loading skeletons, empty state, error retry, and pagination.  |
+| **`<DataTableToolbar>`**         | Search input, dynamic faceted filter triggers, reset button, and custom action slots (`#actions`).                         |
+| **`<DataTableFloatingBar>`**     | Floating bulk action bar animated at bottom with selection count badge, `#actions` slot, and `Clear` (Esc) trigger.        |
+| **`<DataTableRowActions>`**      | Dropdown action menu (3 dots) with custom actions, icons, separators, and destructive variants.                            |
+| **`<DataTablePagination>`**      | Page navigation (first, prev, next, last), rows per page selector (10/20/50/100), selection summary.                       |
+| **`<DataTableColumnHeader>`**    | Sortable column header button with Asc / Desc / Clear icons and hide column menu.                                          |
+| **`<DataTableFacetedFilter>`**   | Multi-select category popover with command search, item checkboxes, and count badges.                                      |
+| **`<DataTableSelectFilter>`**    | Single-select filter dropdown menu with Radio group, clear button, and custom option icons.                                |
+| **`<DataTableDateRangeFilter>`** | Date range picker popover with quick presets (Today, Yesterday, Last 7d, Last 30d, etc.) and dual-month `<RangeCalendar>`. |
+| **`<DataTableViewOptions>`**     | Dropdown menu to toggle column visibility.                                                                                 |
+| **`<CopyableCell>`**             | Inline cell rendering with click-to-copy button and checkmark confirmation.                                                |
 
 ## 🔘 Row Selection & Bulk Actions
 
@@ -271,6 +272,56 @@ const myAdapter = createCustomAdapter({
     },
   }),
 });
+```
+
+## 📅 Advanced Date Range Filtering
+
+Filter records within date intervals using `<DataTableDateRangeFilter>`:
+
+```vue
+<template>
+  <DataTable :remote="remote">
+    <template #filters>
+      <DataTableDateRangeFilter
+        title="Created Date"
+        :model-value="remote.filters.value.createdAt"
+        @update:model-value="(val) => remote.setFilter('createdAt', val)"
+      />
+    </template>
+  </DataTable>
+</template>
+```
+
+Features:
+
+- Built-in shortcuts: _Hôm nay, Hôm qua, 7 ngày qua, 30 ngày qua, Tháng này, Tháng trước_.
+- Dual-month interactive calendar.
+- Automatically serializes to `_start` and `_end` (`StandardRestAdapter`) or `[gte]` and `[lte]` (`LhsBracketsAdapter`).
+
+## 📌 Sticky Column Pinning & Ergonomics
+
+Freeze columns on the left (e.g. selection checkboxes, customer name) or right (e.g. row actions):
+
+```ts
+const remote = useRemoteTable({
+  columns,
+  columnPinning: {
+    left: ['select'],
+    right: ['actions'],
+  },
+  // ...
+});
+```
+
+Sticky pinned columns automatically receive boundary elevation shadows and blurred background isolation during horizontal scrolling.
+
+## 📏 Table Density Modes
+
+Support compact and spacious views with the `density` prop:
+
+```vue
+<DataTable :remote="remote" density="compact" />
+<!-- 'compact' | 'normal' | 'comfortable' -->
 ```
 
 ## 📄 License
