@@ -10,16 +10,12 @@
 tuquet-lib/
 ├── apps/                     # Runnable applications & consumer products
 ├── packages/                 # Publishable libraries (@tuquet/*)
-│   ├── core/                 # @tuquet/core (Core client & middleware engine)
-│   ├── utils/                # @tuquet/utils (Common async & string utilities)
 │   ├── lunar/                # @tuquet/lunar (Vietnamese astronomical Lunar-Solar calendar)
 │   └── ui/                   # @tuquet/ui (Enterprise Shadcn-Vue 35+ component library)
 ├── tooling/                  # Shared configurations across packages
 │   ├── tsconfig/             # @tuquet/tsconfig (Shared TypeScript configs)
 │   ├── eslint-config/        # @tuquet/eslint-config (Shared ESLint configs)
 │   └── scripts/              # Monorepo governance & verification scripts
-├── examples/                 # Playground and consumer verification apps
-│   └── node-demo/            # Example application consuming @tuquet libraries
 ├── .changeset/               # Versioning and release management configuration
 ├── .github/workflows/        # CI/CD workflows (CI check & Automated npm release)
 ├── package.json              # Root workspace orchestrator
@@ -35,8 +31,6 @@ tuquet-lib/
 
 | Package / Directory | Path                               | Description                                                                                                                 | Status & Build                             |
 | :------------------ | :--------------------------------- | :-------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------- |
-| **`@tuquet/core`**  | [`packages/core`](packages/core)   | Core middleware pipeline, client engine, and extension points.                                                              | Dual ESM/CJS • Types • Publint             |
-| **`@tuquet/utils`** | [`packages/utils`](packages/utils) | Pure utility helpers for asynchronous operations, retry, and strings.                                                       | Dual ESM/CJS • Types • Publint             |
 | **`@tuquet/lunar`** | [`packages/lunar`](packages/lunar) | Astronomical Vietnamese Lunar-Solar calendar converter, Can Chi, 24 Tiết Khí, and recurrence calculator (Giỗ, Rằm, Mùng 1). | Zero-dep • Dual ESM/CJS • 17/17 tests      |
 | **`@tuquet/ui`**    | [`packages/ui`](packages/ui)       | Official Shadcn-Vue component library with 35+ accessible components powered by Reka UI (Radix Vue) and Tailwind CSS.       | Dual ESM/CJS • Types • Style.css • Publint |
 | **`apps/`**         | [`apps/`](apps)                    | Root directory for runnable end-user products, bots, and full-stack services.                                               | Workspace standard                         |
@@ -71,14 +65,6 @@ pnpm test
 ```
 
 Runs Vitest across all workspace packages in parallel.
-
-### 4. Run Example Application
-
-```bash
-pnpm --filter node-demo start
-```
-
-Executes the sample Node.js application that consumes `@tuquet/core` and `@tuquet/utils` directly through workspace resolution.
 
 ---
 

@@ -1,10 +1,4 @@
 {
   "files": [],
-  "references": [
-    { "path": "./packages/core" },
-    { "path": "./packages/utils" },
-    { "path": "./packages/lunar" },
-    { "path": "./packages/ui" },
-    { "path": "./examples/node-demo" }
-  ]
+  "references": [{ "path": "./packages/lunar" }, { "path": "./packages/ui" }]
 }
