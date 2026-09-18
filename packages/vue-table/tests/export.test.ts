@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { generateCsv } from '../src/helpers/export.js';
+import { generateCsv, generateExcelBlob } from '../src/helpers/export.js';
 
-describe('CSV & TSV Export Utilities', () => {
+describe('CSV & TSV & Excel Export Utilities', () => {
   const sampleUsers = [
-    { id: 1, name: 'John Doe', role: 'admin', bio: 'Likes "coding", coffee' },
-    { id: 2, name: 'Jane Smith', role: 'user', bio: 'Simple bio' },
+    { id: 1, name: 'John Doe', role: 'admin', bio: 'Likes "coding", coffee', salary: 1500.5 },
+    { id: 2, name: 'Jane Smith', role: 'user', bio: 'Simple bio', salary: 2000 },
   ];
 
   it('generates valid CSV with headers and escaped commas/quotes', () => {
@@ -16,9 +16,9 @@ describe('CSV & TSV Export Utilities', () => {
     const content = csv.slice(1);
     const lines = content.split('\r\n');
 
-    expect(lines[0]).toBe('id,name,role,bio');
-    expect(lines[1]).toBe('1,John Doe,admin,"Likes ""coding"", coffee"');
-    expect(lines[2]).toBe('2,Jane Smith,user,Simple bio');
+    expect(lines[0]).toBe('id,name,role,bio,salary');
+    expect(lines[1]).toBe('1,John Doe,admin,"Likes ""coding"", coffee",1500.5');
+    expect(lines[2]).toBe('2,Jane Smith,user,Simple bio,2000');
   });
 
   it('filters out select and actions columns', () => {
@@ -51,7 +51,7 @@ describe('CSV & TSV Export Utilities', () => {
 
     const content = csv.slice(1);
     const lines = content.split('\r\n');
-    expect(lines[0]).toBe('id,name,role,bio');
+    expect(lines[0]).toBe('id,name,role,bio,salary');
     expect(lines[1]).toContain('John Doe');
   });
 
@@ -62,5 +62,23 @@ describe('CSV & TSV Export Utilities', () => {
     });
 
     expect(csv.startsWith('\uFEFF')).toBe(false);
+  });
+
+  it('generates valid Excel (.xlsx) Blob with typed columns and styling', async () => {
+    const blob = await generateExcelBlob({
+      data: sampleUsers,
+      columns: [
+        { accessorKey: 'name', header: 'Customer Name' },
+        { accessorKey: 'salary', header: 'Monthly Salary' },
+      ] as any,
+      headerStyle: {
+        fontWeight: 'bold',
+        backgroundColor: '#e2e8f0',
+      },
+    });
+
+    expect(blob).toBeDefined();
+    expect(blob.size).toBeGreaterThan(1000);
+    expect(blob.type).toContain('spreadsheetml');
   });
 });

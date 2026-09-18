@@ -43,6 +43,7 @@ export * from './components/ui/separator/index.js';
 export * from './components/ui/sheet/index.js';
 export * from './components/ui/skeleton/index.js';
 export * from './components/ui/slider/index.js';
+export * from './components/ui/sonner/index.js';
 export * from './components/ui/switch/index.js';
 export * from './components/ui/table/index.js';
 export * from './components/ui/tabs/index.js';

@@ -2,6 +2,7 @@
 import {
   DataTable,
   DataTableDateRangeFilter,
+  RemoteCombobox,
   createActionsColumn,
   createAvatarColumn,
   createBadgeColumn,
@@ -10,14 +11,15 @@ import {
   createDateColumn,
   createSelectionColumn,
   exportToCsv,
+  exportToExcel,
   copyToClipboardAsTsv,
   useRemoteTable,
   type ColumnDef,
   type TableDensity,
   type DateRangeValue,
 } from '@tuquet/vue-table';
-import { Button } from '@tuquet/vue-ui';
-import { Download, Plus, Trash2, CheckCircle, Copy } from 'lucide-vue-next';
+import { Button, Toaster, toast } from '@tuquet/vue-ui';
+import { Download, FileSpreadsheet, Plus, Trash2, CheckCircle, Copy, Zap } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 interface Order {
@@ -62,6 +64,69 @@ const mockDatabase: Order[] = Array.from({ length: 65 }, (_, i) => {
 
 const copiedFeedback = ref(false);
 const density = ref<TableDensity>('normal');
+const isVirtual = ref(false);
+
+// Showcase: RemoteCombobox mock customer data
+interface CustomerOption {
+  id: string;
+  name: string;
+  email: string;
+}
+
+const mockCustomers = ref<CustomerOption[]>(
+  Array.from({ length: 45 }, (_, i) => ({
+    id: `cus_${i + 1}`,
+    name: `Customer ${i + 1}`,
+    email: `customer${i + 1}@enterprise.io`,
+  }))
+);
+
+const selectedCustomerId = ref<string>('cus_1');
+
+async function fetchRemoteCustomers({
+  page,
+  pageSize,
+  search,
+}: {
+  page: number;
+  pageSize: number;
+  search: string;
+}) {
+  await new Promise((r) => setTimeout(r, 150));
+  let filtered = [...mockCustomers.value];
+  if (search) {
+    const q = search.toLowerCase();
+    filtered = filtered.filter(
+      (c) => c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q)
+    );
+  }
+  const start = (page - 1) * pageSize;
+  const pageData = filtered.slice(start, start + pageSize);
+  return {
+    data: pageData,
+    total: filtered.length,
+    hasMore: start + pageSize < filtered.length,
+  };
+}
+
+async function handleCreateCustomer(name: string): Promise<CustomerOption> {
+  await new Promise((r) => setTimeout(r, 200));
+  const newCus: CustomerOption = {
+    id: `cus_${Date.now().toString().slice(-4)}`,
+    name,
+    email: `${name.toLowerCase().replace(/\s+/g, '.')}@new.io`,
+  };
+  mockCustomers.value = [newCus, ...mockCustomers.value];
+  toast.success(`Created customer "${name}"`);
+  return newCus;
+}
+
+async function handleDeleteCustomer(cus: CustomerOption): Promise<boolean> {
+  await new Promise((r) => setTimeout(r, 200));
+  mockCustomers.value = mockCustomers.value.filter((c) => c.id !== cus.id);
+  toast.error(`Deleted customer "${cus.name}"`);
+  return true;
+}
 
 const columns: ColumnDef<Order>[] = [
   createSelectionColumn<Order>(),
@@ -100,6 +165,7 @@ const columns: ColumnDef<Order>[] = [
         label: 'Mark Completed',
         onSelect: (row) => {
           remote.mutateRow(row.original.id, { status: 'completed' });
+          toast.success(`Order ${row.original.orderNumber} marked completed`);
         },
       },
       {
@@ -109,6 +175,7 @@ const columns: ColumnDef<Order>[] = [
         separator: true,
         onSelect: (row) => {
           remote.deleteRow(row.original.id);
+          toast.error(`Order ${row.original.orderNumber} deleted`);
         },
       },
     ],
@@ -245,6 +312,7 @@ function handleAddNewOrder() {
 
   // Optimistic local prepend
   remote.prependRow(newOrder);
+  toast.success(`Created new order ${newOrder.orderNumber}`);
 }
 
 function handleExportCsv() {
@@ -253,6 +321,20 @@ function handleExportCsv() {
     columns,
     filename: 'showcase-orders.csv',
   });
+  toast.success('Exported CSV file successfully');
+}
+
+async function handleExportExcel() {
+  await exportToExcel({
+    data: remote.data.value,
+    columns,
+    filename: 'showcase-orders.xlsx',
+    headerStyle: {
+      fontWeight: 'bold',
+      backgroundColor: '#e2e8f0',
+    },
+  });
+  toast.success('Exported Excel (.xlsx) file successfully');
 }
 
 async function handleCopyTsv() {
@@ -263,9 +345,12 @@ async function handleCopyTsv() {
 
   if (success) {
     copiedFeedback.value = true;
+    toast.success('Copied records to clipboard as TSV');
     setTimeout(() => {
       copiedFeedback.value = false;
     }, 2000);
+  } else {
+    toast.error('Failed to copy to clipboard');
   }
 }
 
@@ -275,26 +360,41 @@ function handleBulkComplete() {
     remote.mutateRow(id, { status: 'completed' });
   }
   remote.clearSelection();
+  toast.success(`Marked ${ids.length} orders as completed`);
 }
 
 function handleBulkDelete() {
   const ids = remote.selectedRows.value.map((r) => r.original.id);
   remote.deleteRow(ids);
   remote.clearSelection();
+  toast.error(`Deleted ${ids.length} orders`);
 }
 </script>
 
 <template>
   <main class="min-h-screen bg-background p-6 md:p-10 max-w-7xl mx-auto space-y-6">
+    <Toaster rich-colors position="top-right" />
+
     <!-- Header -->
     <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-6">
       <div>
         <h1 class="text-2xl font-bold tracking-tight">Orders Management</h1>
         <p class="text-sm text-muted-foreground mt-1">
-          Demonstrating remote pagination, filtering, date range, column pinning, density, optimistic mutations, and export.
+          Demonstrating remote pagination, filtering, date range, column pinning, density, virtual scrolling, and multi-format exports.
         </p>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 flex-wrap">
+        <!-- Virtual scroll toggle -->
+        <Button
+          variant="outline"
+          size="sm"
+          :class="isVirtual ? 'bg-primary text-primary-foreground hover:bg-primary/90' : ''"
+          @click="isVirtual = !isVirtual"
+        >
+          <Zap class="mr-1.5 h-3.5 w-3.5" />
+          {{ isVirtual ? 'Virtual Scroll: On' : 'Virtual Scroll: Off' }}
+        </Button>
+
         <!-- Density switch -->
         <div class="flex items-center rounded-lg border bg-muted/30 p-0.5 text-xs">
           <button
@@ -325,11 +425,15 @@ function handleBulkDelete() {
 
         <Button variant="outline" size="sm" @click="handleExportCsv">
           <Download class="mr-2 h-4 w-4" />
-          Export CSV
+          CSV
+        </Button>
+        <Button variant="outline" size="sm" @click="handleExportExcel">
+          <FileSpreadsheet class="mr-2 h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+          Excel
         </Button>
         <Button variant="outline" size="sm" @click="handleCopyTsv">
           <Copy class="mr-2 h-4 w-4" />
-          {{ copiedFeedback ? 'Copied TSV!' : 'Copy TSV' }}
+          {{ copiedFeedback ? 'Copied!' : 'TSV' }}
         </Button>
         <Button size="sm" @click="handleAddNewOrder">
           <Plus class="mr-2 h-4 w-4" />
@@ -338,8 +442,48 @@ function handleBulkDelete() {
       </div>
     </header>
 
+    <!-- Showcase: Remote Combobox with Infinite Scroll & Inline CRUD -->
+    <section class="rounded-xl border bg-card p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="space-y-1">
+        <div class="flex items-center gap-2">
+          <h2 class="text-sm font-semibold text-foreground">Remote Combobox</h2>
+          <span class="text-[10px] bg-primary/10 text-primary font-medium px-2 py-0.5 rounded-full">
+            Infinite Scroll + Inline CRUD Hooks
+          </span>
+        </div>
+        <p class="text-xs text-muted-foreground">
+          Cuộn vô tận, tìm kiếm remote debounced, gõ để tạo mới tại chỗ (+ Create), và hover icon thùng rác để xóa option với xác nhận inline an toàn.
+        </p>
+      </div>
+
+      <div class="w-full md:w-80 shrink-0">
+        <RemoteCombobox
+          v-model="selectedCustomerId"
+          :fetcher="fetchRemoteCustomers"
+          :on-create="handleCreateCustomer"
+          :on-delete="handleDeleteCustomer"
+          value-key="id"
+          label-key="name"
+          placeholder="Chọn khách hàng..."
+          search-placeholder="Tìm kiếm hoặc tạo mới..."
+        >
+          <template #option="{ option }">
+            <div class="flex flex-col py-0.5">
+              <span class="font-medium text-xs">{{ option.name }}</span>
+              <span class="text-[10px] text-muted-foreground">{{ option.email }}</span>
+            </div>
+          </template>
+        </RemoteCombobox>
+      </div>
+    </section>
+
     <!-- Data Table -->
-    <DataTable :remote="remote" :density="density">
+    <DataTable
+      :remote="remote"
+      :density="density"
+      :virtual="isVirtual"
+      virtual-height="520px"
+    >
       <!-- Date Range Filter in Filters Slot -->
       <template #filters>
         <DataTableDateRangeFilter

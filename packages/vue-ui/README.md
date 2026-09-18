@@ -78,8 +78,27 @@ import {
 - **Actions**: `Button`, `Toggle`, `ToggleGroup`
 - **Data Display**: `Table`, `Badge`, `Card`, `Avatar`, `Separator`, `Progress`, `Accordion`, `Tabs`, `Collapsible`, `ScrollArea`, `Calendar`
 - **Forms**: `Input`, `Textarea`, `Checkbox`, `Switch`, `Label`, `RadioGroup`, `Select`, `Slider`
-- **Overlays & Feedback**: `Dialog`, `AlertDialog`, `Sheet`, `Popover`, `Tooltip`, `DropdownMenu`, `Command`, `Alert`, `Skeleton`, `ContextMenu`, `HoverCard`
+- **Overlays & Feedback**: `Dialog`, `AlertDialog`, `Sheet`, `Popover`, `Tooltip`, `DropdownMenu`, `Command`, `Alert`, `Skeleton`, `ContextMenu`, `HoverCard`, `Toaster` (`toast` notification via Sonner)
 - **Navigation**: `Pagination`, `Breadcrumb`
+
+### Toast Notification Usage
+
+```vue
+<script setup lang="ts">
+import { Button, Toaster, toast } from '@tuquet/vue-ui';
+
+function showToast() {
+  toast.success('Record saved successfully!');
+}
+</script>
+
+<template>
+  <div>
+    <Toaster rich-colors position="top-right" />
+    <Button @click="showToast">Save</Button>
+  </div>
+</template>
+```
 
 ## 📄 License
 

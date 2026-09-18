@@ -48,3 +48,4 @@ export {
   type TextFilterValue,
   type DataTableTextFilterProps,
 } from './DataTableTextFilter.vue';
+export { default as RemoteCombobox, type RemoteComboboxProps } from './RemoteCombobox.vue';

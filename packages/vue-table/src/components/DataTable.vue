@@ -1,5 +1,6 @@
 <script setup lang="ts" generic="TData">
-import { FlexRender } from '@tanstack/vue-table';
+import { FlexRender, type Column } from '@tanstack/vue-table';
+import { useVirtualizer } from '@tanstack/vue-virtual';
 import {
   Button,
   Skeleton,
@@ -11,9 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from '@tuquet/vue-ui';
-import type { Column } from '@tanstack/vue-table';
 import { AlertCircle, RefreshCw } from 'lucide-vue-next';
-import { computed, type CSSProperties } from 'vue';
+import { computed, ref, type CSSProperties } from 'vue';
 import type { UseRemoteTableReturn } from '../composables/useRemoteTable.js';
 import type { TableDensity } from '../types/index.js';
 import DataTableFloatingBar from './DataTableFloatingBar.vue';
@@ -28,6 +28,22 @@ export interface DataTableProps<TData> {
   emptyMessage?: string;
   skeletonRows?: number;
   density?: TableDensity;
+  /**
+   * Enable virtual scrolling for large datasets
+   */
+  virtual?: boolean;
+  /**
+   * Container height when virtual is enabled (e.g. '500px' or 500)
+   */
+  virtualHeight?: string | number;
+  /**
+   * Estimated row height in pixels
+   */
+  estimatedRowHeight?: number;
+  /**
+   * Number of items rendered outside the viewport
+   */
+  overscan?: number;
 }
 
 const props = withDefaults(defineProps<DataTableProps<TData>>(), {
@@ -37,13 +53,61 @@ const props = withDefaults(defineProps<DataTableProps<TData>>(), {
   emptyMessage: 'No results found.',
   skeletonRows: 5,
   density: 'normal',
+  virtual: false,
+  virtualHeight: '500px',
+  overscan: 5,
 });
+
+const tableContainerRef = ref<HTMLDivElement | null>(null);
 
 const table = computed(() => props.remote.table);
 const isLoading = computed(() => props.remote.isLoading.value);
 const isError = computed(() => props.remote.isError.value);
 const error = computed(() => props.remote.error.value);
 const columnCount = computed(() => table.value.getAllColumns().length);
+const rows = computed(() => table.value.getRowModel().rows);
+
+const defaultEstimateSize = computed(() => {
+  if (props.estimatedRowHeight) return props.estimatedRowHeight;
+  switch (props.density) {
+    case 'compact':
+      return 36;
+    case 'comfortable':
+      return 56;
+    default:
+      return 44;
+  }
+});
+
+const rowVirtualizer = useVirtualizer(
+  computed(() => ({
+    count: props.virtual ? rows.value.length : 0,
+    getScrollElement: () => tableContainerRef.value,
+    estimateSize: () => defaultEstimateSize.value,
+    overscan: props.overscan,
+  }))
+);
+
+const virtualRows = computed(() => {
+  if (!props.virtual) return [];
+  return rowVirtualizer.value.getVirtualItems();
+});
+
+const totalVirtualSize = computed(() => {
+  if (!props.virtual) return 0;
+  return rowVirtualizer.value.getTotalSize();
+});
+
+const paddingTop = computed(() => {
+  if (!props.virtual || virtualRows.value.length === 0) return 0;
+  return virtualRows.value[0]?.start ?? 0;
+});
+
+const paddingBottom = computed(() => {
+  if (!props.virtual || virtualRows.value.length === 0) return 0;
+  const lastItem = virtualRows.value[virtualRows.value.length - 1];
+  return totalVirtualSize.value - (lastItem?.end ?? 0);
+});
 
 const densityClasses = computed(() => {
   switch (props.density) {
@@ -116,9 +180,14 @@ function getPinningStyle(column: Column<any>): CSSProperties {
     </div>
 
     <!-- Table Container -->
-    <div v-else class="rounded-md border overflow-x-auto relative">
+    <div
+      v-else
+      ref="tableContainerRef"
+      class="rounded-md border overflow-x-auto relative"
+      :style="virtual ? { maxHeight: typeof virtualHeight === 'number' ? `${virtualHeight}px` : virtualHeight, overflowY: 'auto' } : undefined"
+    >
       <Table>
-        <TableHeader>
+        <TableHeader :class="virtual ? 'sticky top-0 z-30 bg-background shadow-xs' : ''">
           <TableRow
             v-for="headerGroup in table.getHeaderGroups()"
             :key="headerGroup.id"
@@ -157,29 +226,66 @@ function getPinningStyle(column: Column<any>): CSSProperties {
           </template>
 
           <!-- Actual Rows -->
-          <template v-else-if="table.getRowModel().rows.length">
-            <TableRow
-              v-for="row in table.getRowModel().rows"
-              :key="row.id"
-              :data-state="row.getIsSelected() ? 'selected' : undefined"
-            >
-              <TableCell
-                v-for="cell in row.getVisibleCells()"
-                :key="cell.id"
-                :style="getPinningStyle(cell.column)"
-                :class="[
-                  densityClasses,
-                  cell.column.getIsPinned() ? 'sticky z-10 bg-background/95 backdrop-blur' : '',
-                  cell.column.getIsLastColumn('left') ? 'border-r shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]' : '',
-                  cell.column.getIsFirstColumn('right') ? 'border-l shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.1)]' : '',
-                ]"
+          <template v-else-if="rows.length">
+            <!-- Virtualized Rendering Mode -->
+            <template v-if="virtual">
+              <tr v-if="paddingTop > 0" aria-hidden="true">
+                <td :colspan="columnCount" :style="{ height: `${paddingTop}px` }" class="p-0 border-0" />
+              </tr>
+              <TableRow
+                v-for="virtualRow in virtualRows"
+                :key="rows[virtualRow.index]?.id ?? virtualRow.index"
+                :data-index="virtualRow.index"
+                :data-state="rows[virtualRow.index]?.getIsSelected() ? 'selected' : undefined"
+                :ref="(el) => rowVirtualizer?.measureElement(el as any)"
               >
-                <FlexRender
-                  :render="cell.column.columnDef.cell"
-                  :props="cell.getContext()"
-                />
-              </TableCell>
-            </TableRow>
+                <TableCell
+                  v-for="cell in rows[virtualRow.index]?.getVisibleCells() ?? []"
+                  :key="cell.id"
+                  :style="getPinningStyle(cell.column)"
+                  :class="[
+                    densityClasses,
+                    cell.column.getIsPinned() ? 'sticky z-10 bg-background/95 backdrop-blur' : '',
+                    cell.column.getIsLastColumn('left') ? 'border-r shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]' : '',
+                    cell.column.getIsFirstColumn('right') ? 'border-l shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.1)]' : '',
+                  ]"
+                >
+                  <FlexRender
+                    :render="cell.column.columnDef.cell"
+                    :props="cell.getContext()"
+                  />
+                </TableCell>
+              </TableRow>
+              <tr v-if="paddingBottom > 0" aria-hidden="true">
+                <td :colspan="columnCount" :style="{ height: `${paddingBottom}px` }" class="p-0 border-0" />
+              </tr>
+            </template>
+
+            <!-- Standard Rendering Mode -->
+            <template v-else>
+              <TableRow
+                v-for="row in rows"
+                :key="row.id"
+                :data-state="row.getIsSelected() ? 'selected' : undefined"
+              >
+                <TableCell
+                  v-for="cell in row.getVisibleCells()"
+                  :key="cell.id"
+                  :style="getPinningStyle(cell.column)"
+                  :class="[
+                    densityClasses,
+                    cell.column.getIsPinned() ? 'sticky z-10 bg-background/95 backdrop-blur' : '',
+                    cell.column.getIsLastColumn('left') ? 'border-r shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]' : '',
+                    cell.column.getIsFirstColumn('right') ? 'border-l shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.1)]' : '',
+                  ]"
+                >
+                  <FlexRender
+                    :render="cell.column.columnDef.cell"
+                    :props="cell.getContext()"
+                  />
+                </TableCell>
+              </TableRow>
+            </template>
           </template>
 
           <!-- Empty State -->

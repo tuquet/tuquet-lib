@@ -35,9 +35,11 @@
   "dependencies": {
     "@internationalized/date": "^3.12.4",
     "@tanstack/vue-table": "^8.21.3",
+    "@tanstack/vue-virtual": "^3.13.39",
     "@tuquet/vue-ui": "workspace:*",
     "@vueuse/core": "^15.0.0",
-    "lucide-vue-next": "^1.0.0"
+    "lucide-vue-next": "^1.0.0",
+    "write-excel-file": "^4.1.1"
   },
   "peerDependencies": {
     "vue": "^3.4.0 || ^3.5.0"

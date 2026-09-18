@@ -1,9 +1,22 @@
 import type { ColumnDef, Row } from '@tanstack/vue-table';
+import writeXlsxFile, { type Row as ExcelRow } from 'write-excel-file/universal';
 
 export interface ExportColumn<TData> {
   id: string;
   header: string;
   accessor?: (row: TData) => unknown;
+}
+
+export interface ExportExcelOptions<TData> {
+  data: (TData | Row<TData>)[];
+  filename?: string;
+  sheetName?: string;
+  columns?: (ColumnDef<TData, unknown> | ExportColumn<TData>)[];
+  headerStyle?: {
+    fontWeight?: 'bold';
+    backgroundColor?: string;
+    color?: string;
+  };
 }
 
 export interface ExportCsvOptions<TData> {
@@ -195,4 +208,99 @@ export async function copyToClipboardAsTsv<TData>(
     console.error('Failed to copy TSV to clipboard:', err);
     return false;
   }
+}
+
+/**
+ * Generate Excel (.xlsx) Blob from table records
+ */
+export async function generateExcelBlob<TData>(
+  options: Omit<ExportExcelOptions<TData>, 'filename'>
+): Promise<Blob> {
+  const rawRows = extractRawRows(options.data);
+  const cols = resolveColumns(rawRows, options.columns);
+
+  if (cols.length === 0) {
+    throw new Error('No columns resolved for Excel export');
+  }
+
+  const headerBg = options.headerStyle?.backgroundColor ?? '#f1f5f9';
+  const headerFont = options.headerStyle?.fontWeight ?? 'bold';
+  const headerColor = options.headerStyle?.color;
+
+  const headerRow: ExcelRow = cols.map((c) => ({
+    value: c.header,
+    fontWeight: headerFont,
+    backgroundColor: headerBg,
+    color: headerColor,
+  }));
+
+  const colWidths: number[] = cols.map((c) => Math.max(c.header.length + 4, 12));
+
+  const dataRows: ExcelRow[] = rawRows.map((row) => {
+    return cols.map((col, colIdx) => {
+      const val = col.getValue(row);
+      if (val === null || val === undefined) {
+        return { value: '' };
+      }
+      if (typeof val === 'number') {
+        const numStr = String(val);
+        colWidths[colIdx] = Math.max(colWidths[colIdx], numStr.length + 3);
+        return {
+          value: val,
+          type: Number,
+          format: Number.isInteger(val) ? '#,##0' : '#,##0.00',
+        };
+      }
+      if (val instanceof Date) {
+        colWidths[colIdx] = Math.max(colWidths[colIdx], 12);
+        return {
+          value: val,
+          type: Date,
+          format: 'yyyy-mm-dd',
+        };
+      }
+      if (typeof val === 'boolean') {
+        return {
+          value: val,
+          type: Boolean,
+        };
+      }
+
+      const strVal = String(val);
+      colWidths[colIdx] = Math.min(Math.max(colWidths[colIdx], strVal.length + 2), 50);
+      return {
+        value: strVal,
+        type: String,
+      };
+    });
+  });
+
+  const sheetData = [headerRow, ...dataRows];
+  const columnsOptions = colWidths.map((width) => ({ width }));
+
+  const file = writeXlsxFile(sheetData, {
+    columns: columnsOptions,
+    sheet: options.sheetName,
+  });
+
+  return await file.toBlob();
+}
+
+/**
+ * Download Excel (.xlsx) file in browser
+ */
+export async function exportToExcel<TData>(options: ExportExcelOptions<TData>): Promise<void> {
+  const { filename = 'table-export.xlsx' } = options;
+  const blob = await generateExcelBlob(options);
+
+  if (typeof window === 'undefined') return;
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', filename.endsWith('.xlsx') ? filename : `${filename}.xlsx`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
