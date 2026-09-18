@@ -196,26 +196,57 @@ remote.prependRow(newOrder);
 await remote.refetch();
 ```
 
-## 📤 CSV & TSV Data Export
+## 📤 Multi-format Data Export (CSV, TSV & Excel .xlsx)
 
-Export table data with automatic Excel UTF-8 BOM encoding:
+Export table data with automatic Excel UTF-8 BOM encoding or native styled Excel spreadsheets (`.xlsx`) via `write-excel-file`:
 
 ```ts
-import { exportToCsv, copyToClipboardAsTsv } from '@tuquet/vue-table';
+import { exportToCsv, exportToExcel, copyToClipboardAsTsv } from '@tuquet/vue-table';
 
-// Download current page or filtered records
+// 1. Download formatted Excel spreadsheet (.xlsx) with header styling and typed columns
+await exportToExcel({
+  data: remote.data.value,
+  columns,
+  filename: 'orders-export.xlsx',
+  headerStyle: {
+    fontWeight: 'bold',
+    backgroundColor: '#e2e8f0',
+  },
+});
+
+// 2. Download CSV with UTF-8 BOM
 exportToCsv({
   data: remote.data.value,
   columns,
   filename: 'orders-export.csv',
 });
 
-// Or copy selected rows for pasting into Google Sheets / Excel
+// 3. Or copy selected rows for pasting into Google Sheets / Excel
 await copyToClipboardAsTsv({
   data: remote.selectedRows.value,
   columns,
 });
 ```
+
+## ⚡ Virtual Scrolling for Large Datasets
+
+When rendering datasets with thousands of rows without pagination (or with large page sizes), enable high-performance virtualization powered by `@tanstack/vue-virtual`:
+
+```vue
+<DataTable
+  :remote="remote"
+  :virtual="true"
+  virtual-height="550px"
+  :estimated-row-height="44"
+  :overscan="5"
+/>
+```
+
+Features:
+
+- Dynamically measures rendered rows with dynamic heights.
+- Retains sticky headers and column pinning seamlessly during scroll.
+- Zero DOM lag even with 10,000+ client-side records.
 
 ## 🔌 Query Adapters
 
