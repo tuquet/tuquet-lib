@@ -3,7 +3,7 @@ import { Button } from '@tuquet/vue-ui';
 import { Check, Copy } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
-interface CopyableCellProps {
+export interface CopyableCellProps {
   value: string;
   displayText?: string;
   truncateLength?: number;

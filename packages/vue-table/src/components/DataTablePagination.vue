@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="TData">
 import type { Table } from '@tanstack/vue-table';
 import {
   Button,
@@ -16,14 +16,14 @@ import {
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-interface DataTablePaginationProps {
-  table: Table<unknown>;
+export interface DataTablePaginationProps<TData> {
+  table: Table<TData>;
   total?: number;
   pageSizeOptions?: number[];
   showSelectedCount?: boolean;
 }
 
-const props = withDefaults(defineProps<DataTablePaginationProps>(), {
+const props = withDefaults(defineProps<DataTablePaginationProps<TData>>(), {
   total: 0,
   pageSizeOptions: () => [10, 20, 30, 40, 50, 100],
   showSelectedCount: true,

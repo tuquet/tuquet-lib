@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="TData">
 import type { Row } from '@tanstack/vue-table';
 import {
   Button,
@@ -22,32 +22,32 @@ export interface RowActionItem<TData> {
   onSelect?: (row: Row<TData>) => void;
 }
 
-interface DataTableRowActionsProps<TData> {
+export interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
   actions?: RowActionItem<TData>[];
 }
 
-const props = defineProps<DataTableRowActionsProps<any>>();
+const props = defineProps<DataTableRowActionsProps<TData>>();
 
 const emit = defineEmits<{
-  action: [actionId: string, row: Row<any>];
+  action: [actionId: string, row: Row<TData>];
 }>();
 
-function isHidden(action: RowActionItem<any>): boolean {
+function isHidden(action: RowActionItem<TData>): boolean {
   if (typeof action.hidden === 'function') {
     return action.hidden(props.row);
   }
   return !!action.hidden;
 }
 
-function isDisabled(action: RowActionItem<any>): boolean {
+function isDisabled(action: RowActionItem<TData>): boolean {
   if (typeof action.disabled === 'function') {
     return action.disabled(props.row);
   }
   return !!action.disabled;
 }
 
-function handleSelect(action: RowActionItem<any>) {
+function handleSelect(action: RowActionItem<TData>) {
   if (action.onSelect) {
     action.onSelect(props.row);
   }

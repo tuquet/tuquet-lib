@@ -1,11 +1,11 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="TData">
 import type { Table } from '@tanstack/vue-table';
 import { Badge, Button, Separator } from '@tuquet/vue-ui';
 import { onKeyStroke } from '@vueuse/core';
 import { X } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-interface DataTableFloatingBarProps<TData> {
+export interface DataTableFloatingBarProps<TData> {
   table: Table<TData>;
   /**
    * Total count of records if known
@@ -13,7 +13,7 @@ interface DataTableFloatingBarProps<TData> {
   totalCount?: number;
 }
 
-const props = defineProps<DataTableFloatingBarProps<any>>();
+const props = defineProps<DataTableFloatingBarProps<TData>>();
 
 const emit = defineEmits<{
   clear: [];

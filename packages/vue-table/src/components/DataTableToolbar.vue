@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="TData">
 import type { Table } from '@tanstack/vue-table';
 import { Button, Input } from '@tuquet/vue-ui';
 import { X } from 'lucide-vue-next';
@@ -7,8 +7,8 @@ import type { FilterDef } from '../types/index.js';
 import DataTableFacetedFilter from './DataTableFacetedFilter.vue';
 import DataTableViewOptions from './DataTableViewOptions.vue';
 
-interface DataTableToolbarProps {
-  table: Table<unknown>;
+export interface DataTableToolbarProps<TData> {
+  table: Table<TData>;
   searchPlaceholder?: string;
   searchQuery?: string;
   filterDefs?: FilterDef[];
@@ -17,7 +17,7 @@ interface DataTableToolbarProps {
   showViewOptions?: boolean;
 }
 
-const props = withDefaults(defineProps<DataTableToolbarProps>(), {
+const props = withDefaults(defineProps<DataTableToolbarProps<TData>>(), {
   searchPlaceholder: 'Filter records...',
   searchQuery: '',
   filterDefs: () => [],
@@ -35,6 +35,13 @@ const emit = defineEmits<{
 const facetedFilters = computed(() =>
   props.filterDefs.filter((f): f is Extract<FilterDef, { type: 'faceted' }> => f.type === 'faceted')
 );
+
+function getFilterValues(val: unknown): (string | number)[] {
+  if (Array.isArray(val)) {
+    return val as (string | number)[];
+  }
+  return [];
+}
 </script>
 
 <template>
@@ -52,7 +59,7 @@ const facetedFilters = computed(() =>
           v-if="Array.isArray(filter.options)"
           :title="filter.title"
           :options="filter.options"
-          :model-value="(filters[filter.id] as any) || []"
+          :model-value="getFilterValues(filters[filter.id])"
           @update:model-value="(val) => emit('update:filter', filter.id, val)"
         />
       </template>

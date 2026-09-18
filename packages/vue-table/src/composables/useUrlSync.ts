@@ -1,4 +1,4 @@
-import { onMounted, onUnmounted } from 'vue';
+import { getCurrentInstance, getCurrentScope, onMounted, onScopeDispose, onUnmounted } from 'vue';
 import type { QueryAdapter, TableState } from '../types/index.js';
 
 export interface UrlSyncOptions {
@@ -69,13 +69,20 @@ export function useUrlSync(options: UrlSyncOptions): UseUrlSyncReturn {
     }
   };
 
-  onMounted(() => {
-    window.addEventListener('popstate', handlePopState);
-  });
+  if (getCurrentInstance()) {
+    onMounted(() => {
+      window.addEventListener('popstate', handlePopState);
+    });
 
-  onUnmounted(() => {
-    window.removeEventListener('popstate', handlePopState);
-  });
+    onUnmounted(() => {
+      window.removeEventListener('popstate', handlePopState);
+    });
+  } else if (getCurrentScope()) {
+    window.addEventListener('popstate', handlePopState);
+    onScopeDispose(() => {
+      window.removeEventListener('popstate', handlePopState);
+    });
+  }
 
   return {
     getInitialState,

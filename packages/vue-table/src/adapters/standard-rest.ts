@@ -54,7 +54,7 @@ export class StandardRestAdapter implements QueryAdapter {
           }
         } else if (typeof value === 'object' && value !== null) {
           const obj = value as Record<string, unknown>;
-          if ('start' in obj || 'end' in obj) {
+          if (Object.hasOwn(obj, 'start') || Object.hasOwn(obj, 'end')) {
             if (obj.start !== undefined && obj.start !== null && obj.start !== '') {
               query[`${key}_start`] = obj.start;
             }

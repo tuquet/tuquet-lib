@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="TData, TValue">
 import type { Column } from '@tanstack/vue-table';
 import {
   Button,
@@ -11,13 +11,13 @@ import {
 import { ArrowDown, ArrowUp, ArrowUpDown, EyeOff } from 'lucide-vue-next';
 import type { HTMLAttributes } from 'vue';
 
-interface DataTableColumnHeaderProps<TData, TValue> {
+export interface DataTableColumnHeaderProps<TData, TValue> {
   column: Column<TData, TValue>;
   title: string;
   class?: HTMLAttributes['class'];
 }
 
-const props = defineProps<DataTableColumnHeaderProps<unknown, unknown>>();
+const props = defineProps<DataTableColumnHeaderProps<TData, TValue>>();
 </script>
 
 <template>

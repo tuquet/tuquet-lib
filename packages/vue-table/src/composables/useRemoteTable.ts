@@ -8,7 +8,9 @@ import {
 import {
   computed,
   getCurrentInstance,
+  getCurrentScope,
   onMounted,
+  onScopeDispose,
   ref,
   watch,
   type ComputedRef,
@@ -402,6 +404,19 @@ export function useRemoteTable<TData, TValue = unknown>(
     });
   } else {
     executeFetch();
+  }
+
+  if (getCurrentScope()) {
+    onScopeDispose(() => {
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+        debounceTimer = null;
+      }
+      if (activeController) {
+        activeController.abort('Table composable disposed or unmounted');
+        activeController = null;
+      }
+    });
   }
 
   return {

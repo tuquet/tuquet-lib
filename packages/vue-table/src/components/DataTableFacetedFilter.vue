@@ -18,7 +18,7 @@ import { Check, PlusCircle } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import type { FacetedFilterOption } from '../types/index.js';
 
-interface DataTableFacetedFilterProps {
+export interface DataTableFacetedFilterProps {
   title?: string;
   options: FacetedFilterOption[];
   modelValue?: (string | number)[];

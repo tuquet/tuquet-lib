@@ -1,8 +1,11 @@
 import type { ColumnDef, Row } from '@tanstack/vue-table';
 import { Badge } from '@tuquet/vue-ui';
-import { h } from 'vue';
+import { type Component, h } from 'vue';
 import CopyableCell from '../components/CopyableCell.vue';
-import DataTableRowActions, { type RowActionItem } from '../components/DataTableRowActions.vue';
+import DataTableRowActions, {
+  type DataTableRowActionsProps,
+  type RowActionItem,
+} from '../components/DataTableRowActions.vue';
 
 // --- Date Column ---
 export interface DateColumnOptions<TData> {
@@ -214,14 +217,14 @@ export interface ActionsColumnOptions<TData> {
 
 export function createActionsColumn<TData>(
   options: ActionsColumnOptions<TData>
-): ColumnDef<TData, any> {
+): ColumnDef<TData, unknown> {
   const { id = 'actions', header = '', actions, size = 50 } = options;
 
   return {
     id,
     header,
     cell: ({ row }: { row: Row<TData> }) => {
-      return h(DataTableRowActions, {
+      return h(DataTableRowActions as Component<DataTableRowActionsProps<TData>>, {
         row,
         actions,
       });

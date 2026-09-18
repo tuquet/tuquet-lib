@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="TData">
 import type { Table } from '@tanstack/vue-table';
 import {
   Button,
@@ -12,11 +12,11 @@ import {
 import { SlidersHorizontal } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-interface DataTableViewOptionsProps {
-  table: Table<unknown>;
+export interface DataTableViewOptionsProps<TData> {
+  table: Table<TData>;
 }
 
-const props = defineProps<DataTableViewOptionsProps>();
+const props = defineProps<DataTableViewOptionsProps<TData>>();
 
 const columns = computed(() =>
   props.table

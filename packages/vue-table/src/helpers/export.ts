@@ -9,55 +9,104 @@ export interface ExportColumn<TData> {
 export interface ExportCsvOptions<TData> {
   data: (TData | Row<TData>)[];
   filename?: string;
-  columns?: (ColumnDef<TData, any> | ExportColumn<TData>)[];
+  columns?: (ColumnDef<TData, unknown> | ExportColumn<TData>)[];
   includeBOM?: boolean;
 }
 
 export interface CopyTsvOptions<TData> {
   data: (TData | Row<TData>)[];
-  columns?: (ColumnDef<TData, any> | ExportColumn<TData>)[];
+  columns?: (ColumnDef<TData, unknown> | ExportColumn<TData>)[];
+}
+
+type ColumnLike<TData> = ColumnDef<TData, unknown> | ExportColumn<TData>;
+
+interface ResolvedExportColumn<TData> {
+  id: string;
+  header: string;
+  getValue: (row: TData) => unknown;
 }
 
 function extractRawRows<TData>(rows: (TData | Row<TData>)[]): TData[] {
   return rows.map((r) => {
-    if (r && typeof r === 'object' && 'original' in r) {
+    if (r && typeof r === 'object' && Object.hasOwn(r, 'original')) {
       return (r as Row<TData>).original;
     }
     return r as TData;
   });
 }
 
+function getColumnId<TData>(col: ColumnLike<TData>): string {
+  const candidate = col as unknown as Record<string, unknown>;
+  if (typeof candidate.id === 'string' && candidate.id.length > 0) {
+    return candidate.id;
+  }
+  if (candidate.accessorKey !== undefined && candidate.accessorKey !== null) {
+    return String(candidate.accessorKey);
+  }
+  return '';
+}
+
+function getColumnHeader<TData>(col: ColumnLike<TData>, fallbackId: string): string {
+  const candidate = col as unknown as Record<string, unknown>;
+  if (typeof candidate.header === 'string' && candidate.header.length > 0) {
+    return candidate.header;
+  }
+  return fallbackId;
+}
+
+function getColumnValueExtractor<TData>(
+  col: ColumnLike<TData>,
+  columnId: string
+): (row: TData) => unknown {
+  const candidate = col as unknown as Record<string, unknown>;
+  if (typeof candidate.accessor === 'function') {
+    const fn = candidate.accessor as (row: TData) => unknown;
+    return (row: TData) => fn(row);
+  }
+  if (typeof candidate.accessorFn === 'function') {
+    const fn = candidate.accessorFn as (row: TData) => unknown;
+    return (row: TData) => fn(row);
+  }
+  if (candidate.accessorKey !== undefined && candidate.accessorKey !== null) {
+    const key = String(candidate.accessorKey);
+    return (row: TData) =>
+      typeof row === 'object' && row !== null && Object.hasOwn(row, key)
+        ? (row as Record<string, unknown>)[key]
+        : undefined;
+  }
+  return (row: TData) =>
+    typeof row === 'object' && row !== null && Object.hasOwn(row, columnId)
+      ? (row as Record<string, unknown>)[columnId]
+      : undefined;
+}
+
 function resolveColumns<TData>(
   data: TData[],
-  columns?: (ColumnDef<TData, any> | ExportColumn<TData>)[]
-): { id: string; header: string; getValue: (row: TData) => unknown }[] {
+  columns?: ColumnLike<TData>[]
+): ResolvedExportColumn<TData>[] {
   if (columns && columns.length > 0) {
     return columns
-      .filter((col) => {
-        const id = (col as any).id ?? (col as any).accessorKey;
-        return id !== 'select' && id !== 'actions';
-      })
       .map((col) => {
-        const id = String((col as any).id ?? (col as any).accessorKey ?? '');
-        const header = typeof (col as any).header === 'string' ? (col as any).header : id;
-        const getValue = (row: TData) => {
-          if (typeof (col as any).accessor === 'function') {
-            return (col as any).accessor(row);
-          }
-          if ((col as any).accessorKey) {
-            return (row as any)[(col as any).accessorKey];
-          }
-          return (row as any)[id];
-        };
-        return { id, header, getValue };
-      });
+        const id = getColumnId(col);
+        return { col, id };
+      })
+      .filter(({ id }) => id !== 'select' && id !== 'actions' && id.length > 0)
+      .map(({ col, id }) => ({
+        id,
+        header: getColumnHeader(col, id),
+        getValue: getColumnValueExtractor(col, id),
+      }));
   }
 
   if (data.length > 0 && typeof data[0] === 'object' && data[0] !== null) {
-    return Object.keys(data[0]).map((key) => ({
+    const firstRow = data[0] as Record<string, unknown>;
+    return Object.keys(firstRow).map((key) => ({
       id: key,
       header: key,
-      getValue: (row: TData) => (row as any)[key],
+      getValue: (row: TData) =>
+        typeof row === 'object' && row !== null && Object.hasOwn(row, key)
+          ? (row as Record<string, unknown>)[key]
+          : undefined,
     }));
   }
 

@@ -17,7 +17,7 @@ export interface SelectFilterOption {
   icon?: Component;
 }
 
-interface DataTableSelectFilterProps {
+export interface DataTableSelectFilterProps {
   title: string;
   value?: string | number | null;
   options: SelectFilterOption[];

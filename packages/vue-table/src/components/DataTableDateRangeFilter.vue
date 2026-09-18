@@ -26,7 +26,7 @@ export interface DateRangePreset {
   getRange: () => { start: string; end: string };
 }
 
-interface DataTableDateRangeFilterProps {
+export interface DataTableDateRangeFilterProps {
   title?: string;
   modelValue?: DateRangeValue | [string, string] | null;
   placeholder?: string;

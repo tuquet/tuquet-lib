@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="TData">
 import { FlexRender } from '@tanstack/vue-table';
 import {
   Button,
@@ -20,7 +20,7 @@ import DataTableFloatingBar from './DataTableFloatingBar.vue';
 import DataTablePagination from './DataTablePagination.vue';
 import DataTableToolbar from './DataTableToolbar.vue';
 
-interface DataTableProps<TData> {
+export interface DataTableProps<TData> {
   remote: UseRemoteTableReturn<TData>;
   showToolbar?: boolean;
   showPagination?: boolean;
@@ -30,7 +30,7 @@ interface DataTableProps<TData> {
   density?: TableDensity;
 }
 
-const props = withDefaults(defineProps<DataTableProps<any>>(), {
+const props = withDefaults(defineProps<DataTableProps<TData>>(), {
   showToolbar: true,
   showPagination: true,
   showFloatingBar: true,
