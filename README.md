@@ -11,7 +11,7 @@ tuquet-lib/
 ├── apps/                     # Runnable applications & consumer products
 ├── packages/                 # Publishable libraries (@tuquet/*)
 │   ├── lunar/                # @tuquet/lunar (Vietnamese astronomical Lunar-Solar calendar)
-│   ├── ui/                   # @tuquet/ui (Enterprise Shadcn-Vue 35+ component library)
+│   ├── vue-ui/               # @tuquet/vue-ui (Enterprise Shadcn-Vue 35+ component library)
 │   └── vue-table/            # @tuquet/vue-table (Remote Data Table with TanStack & Shadcn-Vue)
 ├── tooling/                  # Shared configurations across packages
 │   ├── tsconfig/             # @tuquet/tsconfig (Shared TypeScript configs)
@@ -33,7 +33,7 @@ tuquet-lib/
 | Package / Directory     | Path                                       | Description                                                                                                                   | Status & Build                             |
 | :---------------------- | :----------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------- |
 | **`@tuquet/lunar`**     | [`packages/lunar`](packages/lunar)         | Astronomical Vietnamese Lunar-Solar calendar converter, Can Chi, 24 Tiết Khí, and recurrence calculator (Giỗ, Rằm, Mùng 1).   | Zero-dep • Dual ESM/CJS • 17/17 tests      |
-| **`@tuquet/ui`**        | [`packages/ui`](packages/ui)               | Official Shadcn-Vue component library with 35+ accessible components powered by Reka UI (Radix Vue) and Tailwind CSS.         | Dual ESM/CJS • Types • Style.css • Publint |
+| **`@tuquet/vue-ui`**    | [`packages/vue-ui`](packages/vue-ui)       | Official Shadcn-Vue component library with 35+ accessible components powered by Reka UI (Radix Vue) and Tailwind CSS.         | Dual ESM/CJS • Types • Style.css • Publint |
 | **`@tuquet/vue-table`** | [`packages/vue-table`](packages/vue-table) | Remote-driven Data Table system with server-side pagination, sorting, search, faceted filters, URL sync, and AbortController. | Dual ESM/CJS • Types • Publint • Vitest    |
 | **`apps/`**             | [`apps/`](apps)                            | Root directory for runnable end-user products, bots, and full-stack services.                                                 | Workspace standard                         |
 

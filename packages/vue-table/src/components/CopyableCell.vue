@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Button } from '@tuquet/ui';
+import { Button } from '@tuquet/vue-ui';
 import { Check, Copy } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 

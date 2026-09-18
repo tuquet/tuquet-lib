@@ -1,5 +1,5 @@
 import type { ColumnDef, Row, Table } from '@tanstack/vue-table';
-import { Checkbox } from '@tuquet/ui';
+import { Checkbox } from '@tuquet/vue-ui';
 import { h } from 'vue';
 
 export interface SelectionColumnOptions<TData> {

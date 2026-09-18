@@ -47,12 +47,12 @@ importers:
 
   apps/table-demo:
     dependencies:
-      '@tuquet/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
       '@tuquet/vue-table':
         specifier: workspace:*
         version: link:../../packages/vue-table
+      '@tuquet/vue-ui':
+        specifier: workspace:*
+        version: link:../../packages/vue-ui
       lucide-vue-next:
         specifier: ^1.0.0
         version: 1.0.0(vue@3.5.43(typescript@5.9.3))
@@ -97,7 +97,53 @@ importers:
         specifier: ^3.0.8
         version: 3.2.7(@types/node@22.20.3)(jiti@2.7.0)(stylus@0.57.0)(tsx@4.23.13)(yaml@2.9.1)
 
-  packages/ui:
+  packages/vue-table:
+    dependencies:
+      '@tanstack/vue-table':
+        specifier: ^8.21.3
+        version: 8.21.3(vue@3.5.43(typescript@5.9.3))
+      '@tuquet/vue-ui':
+        specifier: workspace:*
+        version: link:../vue-ui
+      '@vueuse/core':
+        specifier: ^15.0.0
+        version: 15.0.0(vue@3.5.43(typescript@5.9.3))
+      lucide-vue-next:
+        specifier: ^1.0.0
+        version: 1.0.0(vue@3.5.43(typescript@5.9.3))
+    devDependencies:
+      '@tuquet/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/tsconfig
+      '@types/node':
+        specifier: ^22.13.9
+        version: 22.20.3
+      '@vitejs/plugin-vue':
+        specifier: ^5.2.4
+        version: 5.2.4(vite@6.4.3(@types/node@22.20.3)(jiti@2.7.0)(stylus@0.57.0)(tsx@4.23.13)(yaml@2.9.1))(vue@3.5.43(typescript@5.9.3))
+      publint:
+        specifier: ^0.3.24
+        version: 0.3.24
+      typescript:
+        specifier: ^5.8.2
+        version: 5.9.3
+      vite:
+        specifier: ^6.2.0
+        version: 6.4.3(@types/node@22.20.3)(jiti@2.7.0)(stylus@0.57.0)(tsx@4.23.13)(yaml@2.9.1)
+      vite-plugin-dts:
+        specifier: ^4.5.4
+        version: 4.5.4(@types/node@22.20.3)(rollup@4.63.3)(typescript@5.9.3)(vite@6.4.3(@types/node@22.20.3)(jiti@2.7.0)(stylus@0.57.0)(tsx@4.23.13)(yaml@2.9.1))
+      vitest:
+        specifier: ^3.0.8
+        version: 3.2.7(@types/node@22.20.3)(jiti@2.7.0)(stylus@0.57.0)(tsx@4.23.13)(yaml@2.9.1)
+      vue:
+        specifier: ^3.5.13
+        version: 3.5.43(typescript@5.9.3)
+      vue-tsc:
+        specifier: ^2.2.8
+        version: 2.2.12(typescript@5.9.3)
+
+  packages/vue-ui:
     dependencies:
       '@vueuse/core':
         specifier: ^15.0.0
@@ -157,52 +203,6 @@ importers:
       vite-plugin-dts:
         specifier: ^4.5.4
         version: 4.5.4(@types/node@22.20.3)(rollup@4.63.3)(typescript@5.9.3)(vite@6.4.3(@types/node@22.20.3)(jiti@1.21.7)(stylus@0.57.0)(tsx@4.23.13)(yaml@2.9.1))
-      vue:
-        specifier: ^3.5.13
-        version: 3.5.43(typescript@5.9.3)
-      vue-tsc:
-        specifier: ^2.2.8
-        version: 2.2.12(typescript@5.9.3)
-
-  packages/vue-table:
-    dependencies:
-      '@tanstack/vue-table':
-        specifier: ^8.21.3
-        version: 8.21.3(vue@3.5.43(typescript@5.9.3))
-      '@tuquet/ui':
-        specifier: workspace:*
-        version: link:../ui
-      '@vueuse/core':
-        specifier: ^15.0.0
-        version: 15.0.0(vue@3.5.43(typescript@5.9.3))
-      lucide-vue-next:
-        specifier: ^1.0.0
-        version: 1.0.0(vue@3.5.43(typescript@5.9.3))
-    devDependencies:
-      '@tuquet/tsconfig':
-        specifier: workspace:*
-        version: link:../../tooling/tsconfig
-      '@types/node':
-        specifier: ^22.13.9
-        version: 22.20.3
-      '@vitejs/plugin-vue':
-        specifier: ^5.2.4
-        version: 5.2.4(vite@6.4.3(@types/node@22.20.3)(jiti@2.7.0)(stylus@0.57.0)(tsx@4.23.13)(yaml@2.9.1))(vue@3.5.43(typescript@5.9.3))
-      publint:
-        specifier: ^0.3.24
-        version: 0.3.24
-      typescript:
-        specifier: ^5.8.2
-        version: 5.9.3
-      vite:
-        specifier: ^6.2.0
-        version: 6.4.3(@types/node@22.20.3)(jiti@2.7.0)(stylus@0.57.0)(tsx@4.23.13)(yaml@2.9.1)
-      vite-plugin-dts:
-        specifier: ^4.5.4
-        version: 4.5.4(@types/node@22.20.3)(rollup@4.63.3)(typescript@5.9.3)(vite@6.4.3(@types/node@22.20.3)(jiti@2.7.0)(stylus@0.57.0)(tsx@4.23.13)(yaml@2.9.1))
-      vitest:
-        specifier: ^3.0.8
-        version: 3.2.7(@types/node@22.20.3)(jiti@2.7.0)(stylus@0.57.0)(tsx@4.23.13)(yaml@2.9.1)
       vue:
         specifier: ^3.5.13
         version: 3.5.43(typescript@5.9.3)

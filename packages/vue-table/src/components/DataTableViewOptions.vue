@@ -8,7 +8,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@tuquet/ui';
+} from '@tuquet/vue-ui';
 import { SlidersHorizontal } from 'lucide-vue-next';
 import { computed } from 'vue';
 

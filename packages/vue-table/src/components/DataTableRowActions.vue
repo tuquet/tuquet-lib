@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@tuquet/ui';
+} from '@tuquet/vue-ui';
 import { MoreHorizontal } from 'lucide-vue-next';
 import type { Component } from 'vue';
 

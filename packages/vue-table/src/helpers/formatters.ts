@@ -1,5 +1,5 @@
 import type { ColumnDef, Row } from '@tanstack/vue-table';
-import { Badge } from '@tuquet/ui';
+import { Badge } from '@tuquet/vue-ui';
 import { h } from 'vue';
 import CopyableCell from '../components/CopyableCell.vue';
 import DataTableRowActions, { type RowActionItem } from '../components/DataTableRowActions.vue';

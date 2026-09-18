@@ -13,7 +13,7 @@ import {
   PopoverContent,
   PopoverTrigger,
   Separator,
-} from '@tuquet/ui';
+} from '@tuquet/vue-ui';
 import { Check, PlusCircle } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import type { FacetedFilterOption } from '../types/index.js';

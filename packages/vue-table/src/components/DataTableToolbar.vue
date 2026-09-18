@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Table } from '@tanstack/vue-table';
-import { Button, Input } from '@tuquet/ui';
+import { Button, Input } from '@tuquet/vue-ui';
 import { X } from 'lucide-vue-next';
 import { computed } from 'vue';
 import type { FilterDef } from '../types/index.js';

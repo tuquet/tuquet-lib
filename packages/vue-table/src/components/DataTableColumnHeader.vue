@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@tuquet/ui';
+} from '@tuquet/vue-ui';
 import { ArrowDown, ArrowUp, ArrowUpDown, EyeOff } from 'lucide-vue-next';
 import type { HTMLAttributes } from 'vue';
 

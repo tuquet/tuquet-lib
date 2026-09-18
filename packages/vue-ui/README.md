@@ -1,4 +1,4 @@
-# @tuquet/ui
+# @tuquet/vue-ui
 
 Enterprise UI component library based on **Shadcn-Vue** and **Reka UI (Radix Vue)**, fully typed and ready for modern Vue 3 applications.
 
@@ -12,13 +12,13 @@ Enterprise UI component library based on **Shadcn-Vue** and **Reka UI (Radix Vue
 ## 📦 Installation
 
 ```bash
-pnpm add @tuquet/ui
+pnpm add @tuquet/vue-ui
 ```
 
 Import global styles in your application entry point (`main.ts`):
 
 ```ts
-import '@tuquet/ui/style.css';
+import '@tuquet/vue-ui/style.css';
 ```
 
 ## 🚀 Usage Example
@@ -41,7 +41,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from '@tuquet/ui';
+} from '@tuquet/vue-ui';
 </script>
 
 <template>

@@ -7,7 +7,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@tuquet/ui';
+} from '@tuquet/vue-ui';
 import {
   ChevronLeft,
   ChevronRight,

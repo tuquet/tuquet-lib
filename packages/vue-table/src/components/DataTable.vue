@@ -10,7 +10,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@tuquet/ui';
+} from '@tuquet/vue-ui';
 import { AlertCircle, RefreshCw } from 'lucide-vue-next';
 import { computed } from 'vue';
 import type { UseRemoteTableReturn } from '../composables/useRemoteTable.js';

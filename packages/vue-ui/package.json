@@ -1,5 +1,5 @@
 {
-  "name": "@tuquet/ui",
+  "name": "@tuquet/vue-ui",
   "version": "0.1.0",
   "description": "Enterprise UI component library based on Shadcn-Vue and Radix Vue",
   "type": "module",

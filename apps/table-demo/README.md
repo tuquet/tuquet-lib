@@ -1,6 +1,6 @@
 # @tuquet/table-demo
 
-Interactive showcase and playground application for **@tuquet/vue-table** and **@tuquet/ui**.
+Interactive showcase and playground application for **@tuquet/vue-table** and **@tuquet/vue-ui**.
 
 ## 🎯 Purpose
 

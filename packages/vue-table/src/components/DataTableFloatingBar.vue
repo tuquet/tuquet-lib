@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Table } from '@tanstack/vue-table';
-import { Badge, Button, Separator } from '@tuquet/ui';
+import { Badge, Button, Separator } from '@tuquet/vue-ui';
 import { onKeyStroke } from '@vueuse/core';
 import { X } from 'lucide-vue-next';
 import { computed } from 'vue';

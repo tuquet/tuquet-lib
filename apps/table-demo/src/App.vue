@@ -12,7 +12,7 @@ import {
   useRemoteTable,
   type ColumnDef,
 } from '@tuquet/vue-table';
-import { Button } from '@tuquet/ui';
+import { Button } from '@tuquet/vue-ui';
 import { Download, Plus, RefreshCw, Trash2, CheckCircle, Copy } from 'lucide-vue-next';
 import { ref } from 'vue';
 

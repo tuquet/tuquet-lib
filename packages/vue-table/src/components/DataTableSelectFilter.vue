@@ -7,7 +7,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@tuquet/ui';
+} from '@tuquet/vue-ui';
 import { ChevronDown, X } from 'lucide-vue-next';
 import { computed, type Component } from 'vue';
 

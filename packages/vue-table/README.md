@@ -1,6 +1,6 @@
 # @tuquet/vue-table
 
-Enterprise, remote-driven Data Table system for **Vue 3**, powered by **TanStack Table** and **Shadcn-Vue** ([`@tuquet/ui`](../ui)).
+Enterprise, remote-driven Data Table system for **Vue 3**, powered by **TanStack Table** and **Shadcn-Vue** ([`@tuquet/vue-ui`](../vue-ui)).
 
 ## ✨ Features
 
@@ -14,13 +14,13 @@ Enterprise, remote-driven Data Table system for **Vue 3**, powered by **TanStack
 ## 📦 Installation
 
 ```bash
-pnpm add @tuquet/vue-table @tuquet/ui @tanstack/vue-table
+pnpm add @tuquet/vue-table @tuquet/vue-ui @tanstack/vue-table
 ```
 
 Ensure global styles are imported in your app entry (`main.ts`):
 
 ```ts
-import '@tuquet/ui/style.css';
+import '@tuquet/vue-ui/style.css';
 ```
 
 ## 🚀 Quickstart Example
@@ -29,7 +29,7 @@ import '@tuquet/ui/style.css';
 <script setup lang="ts">
 import { h } from 'vue';
 import { DataTable, useRemoteTable, type ColumnDef } from '@tuquet/vue-table';
-import { Badge } from '@tuquet/ui';
+import { Badge } from '@tuquet/vue-ui';
 
 interface User {
   id: string;
